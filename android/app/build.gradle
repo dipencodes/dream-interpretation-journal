@@ -77,9 +77,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.aiastrologymobile"
+    namespace "com.dreamjournal.interpretation"
     defaultConfig {
-        applicationId "com.aiastrologymobile"
+        applicationId "com.dreamjournal.interpretation"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

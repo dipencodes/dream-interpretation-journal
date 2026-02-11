@@ -1,4 +1,4 @@
-package com.aiastrologymobile
+package com.dreamjournal.interpretation
 
 import android.app.Application
 import com.facebook.react.PackageList

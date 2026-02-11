@@ -11,19 +11,19 @@
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		AFC6611F67DC1CF08E98AB78 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
-		C4A69893703D17ED44138D99 /* libPods-AiAstrologyMobile.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5678AF2F3EDF75DC65DDAB53 /* libPods-AiAstrologyMobile.a */; };
+		C4A69893703D17ED44138D99 /* libPods-DreamInterpretationJournal.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5678AF2F3EDF75DC65DDAB53 /* libPods-DreamInterpretationJournal.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		13B07F961A680F5B00A75B9A /* AiAstrologyMobile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AiAstrologyMobile.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = AiAstrologyMobile/Images.xcassets; sourceTree = "<group>"; };
-		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = AiAstrologyMobile/Info.plist; sourceTree = "<group>"; };
-		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = AiAstrologyMobile/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		38B064ED4820841277BB39DA /* Pods-AiAstrologyMobile.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AiAstrologyMobile.release.xcconfig"; path = "Target Support Files/Pods-AiAstrologyMobile/Pods-AiAstrologyMobile.release.xcconfig"; sourceTree = "<group>"; };
-		5678AF2F3EDF75DC65DDAB53 /* libPods-AiAstrologyMobile.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AiAstrologyMobile.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = AiAstrologyMobile/AppDelegate.swift; sourceTree = "<group>"; };
-		7DFD3A8B2157C2A57BCFC5D9 /* Pods-AiAstrologyMobile.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AiAstrologyMobile.debug.xcconfig"; path = "Target Support Files/Pods-AiAstrologyMobile/Pods-AiAstrologyMobile.debug.xcconfig"; sourceTree = "<group>"; };
-		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = AiAstrologyMobile/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		13B07F961A680F5B00A75B9A /* DreamInterpretationJournal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DreamInterpretationJournal.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = "DreamInterpretationJournal/Images.xcassets"; sourceTree = "<group>"; };
+		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = "DreamInterpretationJournal/Info.plist"; sourceTree = "<group>"; };
+		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = DreamInterpretationJournal/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		38B064ED4820841277BB39DA /* Pods-DreamInterpretationJournal.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DreamInterpretationJournal.release.xcconfig"; path = "Target Support Files/Pods-DreamInterpretationJournal/Pods-DreamInterpretationJournal.release.xcconfig"; sourceTree = "<group>"; };
+		5678AF2F3EDF75DC65DDAB53 /* libPods-DreamInterpretationJournal.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DreamInterpretationJournal.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = DreamInterpretationJournal/AppDelegate.swift; sourceTree = "<group>"; };
+		7DFD3A8B2157C2A57BCFC5D9 /* Pods-DreamInterpretationJournal.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DreamInterpretationJournal.debug.xcconfig"; path = "Target Support Files/Pods-DreamInterpretationJournal/Pods-DreamInterpretationJournal.debug.xcconfig"; sourceTree = "<group>"; };
+		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = "DreamInterpretationJournal/LaunchScreen.storyboard"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -32,14 +32,14 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C4A69893703D17ED44138D99 /* libPods-AiAstrologyMobile.a in Frameworks */,
+				C4A69893703D17ED44138D99 /* libPods-DreamInterpretationJournal.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		13B07FAE1A68108700A75B9A /* AiAstrologyMobile */ = {
+		13B07FAE1A68108700A75B9A /* DreamInterpretationJournal */ = {
 			isa = PBXGroup;
 			children = (
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
@@ -48,14 +48,14 @@
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
 			);
-			name = AiAstrologyMobile;
+			name = "DreamInterpretationJournal";
 			sourceTree = "<group>";
 		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				5678AF2F3EDF75DC65DDAB53 /* libPods-AiAstrologyMobile.a */,
+				5678AF2F3EDF75DC65DDAB53 /* libPods-DreamInterpretationJournal.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -70,7 +70,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
-				13B07FAE1A68108700A75B9A /* AiAstrologyMobile */,
+				13B07FAE1A68108700A75B9A /* DreamInterpretationJournal */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
@@ -84,7 +84,7 @@
 		83CBBA001A601CBA00E9B192 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				13B07F961A680F5B00A75B9A /* AiAstrologyMobile.app */,
+				13B07F961A680F5B00A75B9A /* DreamInterpretationJournal.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -92,8 +92,8 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				7DFD3A8B2157C2A57BCFC5D9 /* Pods-AiAstrologyMobile.debug.xcconfig */,
-				38B064ED4820841277BB39DA /* Pods-AiAstrologyMobile.release.xcconfig */,
+				7DFD3A8B2157C2A57BCFC5D9 /* Pods-DreamInterpretationJournal.debug.xcconfig */,
+				38B064ED4820841277BB39DA /* Pods-DreamInterpretationJournal.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -101,9 +101,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		13B07F861A680F5B00A75B9A /* AiAstrologyMobile */ = {
+		13B07F861A680F5B00A75B9A /* DreamInterpretationJournal */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "AiAstrologyMobile" */;
+			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "DreamInterpretationJournal" */;
 			buildPhases = (
 				A24D28AA51E533AA1DEF72A3 /* [CP] Check Pods Manifest.lock */,
 				13B07F871A680F5B00A75B9A /* Sources */,
@@ -117,9 +117,9 @@
 			);
 			dependencies = (
 			);
-			name = AiAstrologyMobile;
-			productName = AiAstrologyMobile;
-			productReference = 13B07F961A680F5B00A75B9A /* AiAstrologyMobile.app */;
+			name = "DreamInterpretationJournal";
+			productName = "DreamInterpretationJournal";
+			productReference = 13B07F961A680F5B00A75B9A /* DreamInterpretationJournal.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -135,7 +135,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "AiAstrologyMobile" */;
+			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "DreamInterpretationJournal" */;
 			compatibilityVersion = "Xcode 12.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -148,7 +148,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				13B07F861A680F5B00A75B9A /* AiAstrologyMobile */,
+				13B07F861A680F5B00A75B9A /* DreamInterpretationJournal */,
 			);
 		};
 /* End PBXProject section */
@@ -189,15 +189,15 @@
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-AiAstrologyMobile/Pods-AiAstrologyMobile-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-DreamInterpretationJournal/Pods-DreamInterpretationJournal-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-AiAstrologyMobile/Pods-AiAstrologyMobile-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-DreamInterpretationJournal/Pods-DreamInterpretationJournal-frameworks-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-AiAstrologyMobile/Pods-AiAstrologyMobile-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DreamInterpretationJournal/Pods-DreamInterpretationJournal-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		A24D28AA51E533AA1DEF72A3 /* [CP] Check Pods Manifest.lock */ = {
@@ -215,7 +215,7 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-AiAstrologyMobile-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-DreamInterpretationJournal-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -228,15 +228,15 @@
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-AiAstrologyMobile/Pods-AiAstrologyMobile-resources-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-DreamInterpretationJournal/Pods-DreamInterpretationJournal-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-AiAstrologyMobile/Pods-AiAstrologyMobile-resources-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-DreamInterpretationJournal/Pods-DreamInterpretationJournal-resources-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-AiAstrologyMobile/Pods-AiAstrologyMobile-resources.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-DreamInterpretationJournal/Pods-DreamInterpretationJournal-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -255,13 +255,14 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 7DFD3A8B2157C2A57BCFC5D9 /* Pods-AiAstrologyMobile.debug.xcconfig */;
+			baseConfigurationReference = 7DFD3A8B2157C2A57BCFC5D9 /* Pods-DreamInterpretationJournal.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_BITCODE = NO;
-				INFOPLIST_FILE = AiAstrologyMobile/Info.plist;
+				INFOPLIST_FILE = "DreamInterpretationJournal/Info.plist";
+             INFOPLIST_KEY_CFBundleDisplayName = "DreamInterpretationJournal";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -273,8 +274,8 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
-				PRODUCT_NAME = AiAstrologyMobile;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.dreamjournal.interpretation";
+				PRODUCT_NAME = "DreamInterpretationJournal";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -283,12 +284,13 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 38B064ED4820841277BB39DA /* Pods-AiAstrologyMobile.release.xcconfig */;
+			baseConfigurationReference = 38B064ED4820841277BB39DA /* Pods-DreamInterpretationJournal.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				INFOPLIST_FILE = AiAstrologyMobile/Info.plist;
+				INFOPLIST_FILE = "DreamInterpretationJournal/Info.plist";
+             INFOPLIST_KEY_CFBundleDisplayName = "DreamInterpretationJournal";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -300,8 +302,8 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
-				PRODUCT_NAME = AiAstrologyMobile;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.dreamjournal.interpretation";
+				PRODUCT_NAME = "DreamInterpretationJournal";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
@@ -456,7 +458,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "AiAstrologyMobile" */ = {
+		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "DreamInterpretationJournal" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				13B07F941A680F5B00A75B9A /* Debug */,
@@ -465,7 +467,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "AiAstrologyMobile" */ = {
+		83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "DreamInterpretationJournal" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				83CBBA201A601CBA00E9B192 /* Debug */,
