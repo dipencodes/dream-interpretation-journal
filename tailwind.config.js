@@ -10,33 +10,33 @@ module.exports = {
     extend: {
       colors: {
         bg: {
-          base: "#F7F3EE",
+          base: "#FFFFFF",
           surface: "#FFFFFF",
-          elevated: "#FBF7F2",
+          elevated: "#F7F7F7",
         },
         brand: {
-          primary: "#4E6E5D",
-          saffron: "#D4A373",
-          copper: "#8C5A2B",
+          primary: "#F28C28",
+          saffron: "#FFD6A8",
+          copper: "#D97706",
         },
         text: {
-          primary: "#2E2E2E",
+          primary: "#1F1F1F",
           secondary: "#6B6B6B",
           inverse: "#FFFFFF",
         },
         border: {
-          subtle: "#E7DED3",
-          default: "#D8CBBE",
+          subtle: "#EAEAEA",
+          default: "#DADADA",
         },
         chat: {
-          user: "#E6EFE9",
-          bot: "#F1E6D8",
+          user: "#FFF1E5",
+          bot: "#F3F4F6",
         },
         state: {
-          success: "#2F7A5A",
-          warning: "#B07B2C",
-          danger: "#B04A3F",
-          info: "#3D6D7A",
+          success: "#10B981",
+          warning: "#F59E0B",
+          danger: "#EF4444",
+          info: "#3B82F6",
         },
       },
     },

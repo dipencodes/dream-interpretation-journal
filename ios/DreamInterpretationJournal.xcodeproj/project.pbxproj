@@ -15,15 +15,15 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		13B07F961A680F5B00A75B9A /* DreamInterpretationJournal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DreamInterpretationJournal.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = "DreamInterpretationJournal/Images.xcassets"; sourceTree = "<group>"; };
-		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = "DreamInterpretationJournal/Info.plist"; sourceTree = "<group>"; };
+		13B07F961A680F5B00A75B9A /* DreamInterpretationJournal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DreamInterpretationJournal.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = DreamInterpretationJournal/Images.xcassets; sourceTree = "<group>"; };
+		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = DreamInterpretationJournal/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = DreamInterpretationJournal/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		38B064ED4820841277BB39DA /* Pods-DreamInterpretationJournal.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DreamInterpretationJournal.release.xcconfig"; path = "Target Support Files/Pods-DreamInterpretationJournal/Pods-DreamInterpretationJournal.release.xcconfig"; sourceTree = "<group>"; };
 		5678AF2F3EDF75DC65DDAB53 /* libPods-DreamInterpretationJournal.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DreamInterpretationJournal.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = DreamInterpretationJournal/AppDelegate.swift; sourceTree = "<group>"; };
 		7DFD3A8B2157C2A57BCFC5D9 /* Pods-DreamInterpretationJournal.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DreamInterpretationJournal.debug.xcconfig"; path = "Target Support Files/Pods-DreamInterpretationJournal/Pods-DreamInterpretationJournal.debug.xcconfig"; sourceTree = "<group>"; };
-		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = "DreamInterpretationJournal/LaunchScreen.storyboard"; sourceTree = "<group>"; };
+		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = DreamInterpretationJournal/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -48,7 +48,7 @@
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
 			);
-			name = "DreamInterpretationJournal";
+			name = DreamInterpretationJournal;
 			sourceTree = "<group>";
 		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
@@ -117,8 +117,8 @@
 			);
 			dependencies = (
 			);
-			name = "DreamInterpretationJournal";
-			productName = "DreamInterpretationJournal";
+			name = DreamInterpretationJournal;
+			productName = DreamInterpretationJournal;
 			productReference = 13B07F961A680F5B00A75B9A /* DreamInterpretationJournal.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -261,8 +261,8 @@
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_BITCODE = NO;
-				INFOPLIST_FILE = "DreamInterpretationJournal/Info.plist";
-             INFOPLIST_KEY_CFBundleDisplayName = "DreamInterpretationJournal";
+				INFOPLIST_FILE = DreamInterpretationJournal/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = DreamInterpretationJournal;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -274,8 +274,8 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.dreamjournal.interpretation";
-				PRODUCT_NAME = "DreamInterpretationJournal";
+				PRODUCT_BUNDLE_IDENTIFIER = com.dreamjournal.interpretation;
+				PRODUCT_NAME = DreamInterpretationJournal;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -289,8 +289,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				INFOPLIST_FILE = "DreamInterpretationJournal/Info.plist";
-             INFOPLIST_KEY_CFBundleDisplayName = "DreamInterpretationJournal";
+				INFOPLIST_FILE = DreamInterpretationJournal/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = DreamInterpretationJournal;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -302,8 +302,8 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.dreamjournal.interpretation";
-				PRODUCT_NAME = "DreamInterpretationJournal";
+				PRODUCT_BUNDLE_IDENTIFIER = com.dreamjournal.interpretation;
+				PRODUCT_NAME = DreamInterpretationJournal;
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};

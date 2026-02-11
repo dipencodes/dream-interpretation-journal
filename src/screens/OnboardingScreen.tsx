@@ -1,268 +1,122 @@
-import React, { useMemo, useState } from "react";
-import {
-  Platform,
-  Pressable,
-  ScrollView,
-  Text,
-  TextInput,
-  View,
-  KeyboardAvoidingView,
-} from "react-native";
-import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
+import React from "react";
+import { Pressable, Text, View } from "react-native";
 import { t } from "../i18n";
 
-type BirthDetails = {
-  name: string;
-  dobISO: string; // YYYY-MM-DD
-  birthCity: string;
-  birthCountry: string;
-  tob: string; // HH:MM:SS
-};
-
-function pad2(n: number) {
-  return String(n).padStart(2, "0");
+function Bubble({
+  size,
+  emoji,
+  className = "",
+}: {
+  size: number;
+  emoji: string;
+  className?: string;
+}) {
+  return (
+    <View
+      className={[
+        "items-center justify-center rounded-full border border-border-subtle bg-bg-elevated",
+        className,
+      ].join(" ")}
+      style={{ width: size, height: size }}
+    >
+      <Text style={{ fontSize: Math.max(14, size * 0.35) }}>{emoji}</Text>
+    </View>
+  );
 }
 
-function formatISODate(d: Date) {
-  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+function Dots({ activeIndex = 1, total = 3 }: { activeIndex?: number; total?: number }) {
+  return (
+    <View className="flex-row items-center justify-center gap-2">
+      {Array.from({ length: total }).map((_, i) => {
+        const active = i === activeIndex;
+        return (
+          <View
+            key={i}
+            className={[
+              "h-2 rounded-full",
+              active ? "w-10 bg-brand-primary" : "w-2 bg-border-default",
+            ].join(" ")}
+          />
+        );
+      })}
+    </View>
+  );
 }
 
-function isValidTimeHHMMSS(value: string) {
-  return /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/.test(value);
-}
-
-function FieldLabel({ children }: { children: React.ReactNode }) {
-  return <Text className="text-text-primary font-semibold">{children}</Text>;
-}
-
-export function OnboardingScreen(props: { onNext?: (details: BirthDetails) => void }) {
-  const [name, setName] = useState("");
-  const [dob, setDob] = useState<Date | null>(null);
-  const [showDobPicker, setShowDobPicker] = useState(false);
-  const [birthCity, setBirthCity] = useState("");
-  const [birthCountry, setBirthCountry] = useState("");
-  const [tob, setTob] = useState("");
-
-  const [focus, setFocus] = useState<
-    "name" | "city" | "country" | "tob" | null
-  >(null);
-
-  const dobISO = useMemo(() => (dob ? formatISODate(dob) : ""), [dob]);
-  const timeValid = tob.length > 0 && isValidTimeHHMMSS(tob);
-
-  const canContinue =
-    name.trim().length > 0 &&
-    !!dob &&
-    birthCity.trim().length > 0 &&
-    birthCountry.trim().length > 0 &&
-    timeValid;
-
-  const onDobChange = (_event: DateTimePickerEvent, selected?: Date) => {
-    if (Platform.OS === "android") setShowDobPicker(false);
-    if (selected) setDob(selected);
+export function OnboardingScreen(props: { onStart?: () => void }) {
+  const handleStart = () => {
+    // Later: navigate to next screen (journal home / auth / etc.)
+    props.onStart?.();
+    // For now, do nothing
   };
-
-  const handleNext = () => {
-    if (!canContinue) return;
-    props.onNext?.({
-      name: name.trim(),
-      dobISO,
-      birthCity: birthCity.trim(),
-      birthCountry: birthCountry.trim(),
-      tob,
-    });
-  };
-
-  const inputBase =
-    "mt-2 rounded-2xl border bg-bg-elevated px-4 py-3 text-text-primary";
-
-  const borderFor = (key: typeof focus) =>
-    focus === key ? "border-brand-saffron" : "border-border-subtle";
 
   return (
-    <KeyboardAvoidingView
-      className="flex-1 bg-bg-base"
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
-      <ScrollView
-        className="flex-1"
-        contentContainerClassName="px-5 pt-10 pb-10"
-        keyboardShouldPersistTaps="handled"
-      >
-        {/* Soft decorative header */}
-        <View className="relative overflow-hidden rounded-3xl bg-bg-surface border border-border-subtle px-5 pt-6 pb-5 shadow-sm">
-          {/* subtle “aura” blobs */}
-          <View className="absolute -top-16 -right-16 h-44 w-44 rounded-full bg-brand-saffron opacity-20" />
-          <View className="absolute -bottom-20 -left-16 h-52 w-52 rounded-full bg-brand-primary opacity-15" />
+    <View className="flex-1 bg-bg-base">
+      <View className="flex-1 px-6 pt-14 pb-10">
+        {/* Top spacing + optional dots (nice Headspace detail) */}
+        <Dots activeIndex={1} total={3} />
 
-          <Text className="text-text-secondary text-sm font-semibold">
-            {t.onboarding.stepLabel}
-          </Text>
+        {/* Bubble cluster */}
+        <View className="mt-10 items-center justify-center">
+          <View className="relative h-56 w-56">
+            {/* Center bubble */}
+            <View className="absolute left-[78px] top-[78px]">
+              <Bubble size={88} emoji="😊" className="bg-brand-primary/10" />
+            </View>
 
-          <Text className="text-text-primary mt-1 text-3xl font-semibold">
-            {t.onboarding.title}
-          </Text>
-          <Text className="text-text-secondary mt-2 leading-5">
-            {t.onboarding.subtitle}
-          </Text>
+            {/* Surrounding bubbles */}
+            <View className="absolute left-[20px] top-[40px]">
+              <Bubble size={64} emoji="👀" className="bg-state-info/10" />
+            </View>
 
-          {/* Trust badge */}
-          <View className="mt-4 self-start rounded-full bg-bg-elevated border border-border-subtle px-3 py-1">
-            <Text className="text-text-secondary text-xs font-semibold">
-              {t.onboarding.badge}
-            </Text>
-          </View>
+            <View className="absolute right-[18px] top-[52px]">
+              <Bubble size={56} emoji="💭" className="bg-state-success/10" />
+            </View>
 
-          {/* Progress dots */}
-          <View className="mt-4 flex-row items-center gap-2">
-            <View className="h-2 w-10 rounded-full bg-brand-primary" />
-            <View className="h-2 w-2 rounded-full bg-border-default" />
+            <View className="absolute left-[28px] bottom-[34px]">
+              <Bubble size={54} emoji="✨" className="bg-brand-saffron/15" />
+            </View>
+
+            <View className="absolute right-[28px] bottom-[28px]">
+              <Bubble size={60} emoji="😴" className="bg-state-warning/10" />
+            </View>
+
+            {/* Tiny accent bubbles */}
+            <View className="absolute left-[4px] top-[120px]">
+              <Bubble size={34} emoji="🌙" className="bg-brand-primary/10" />
+            </View>
+
+            <View className="absolute right-[6px] top-[132px]">
+              <Bubble size={32} emoji="🧠" className="bg-state-info/10" />
+            </View>
           </View>
         </View>
 
-        {/* Main card */}
-        <View className="mt-5 rounded-3xl bg-bg-surface border border-border-subtle p-5 shadow-sm">
-          {/* Section header */}
-          <View className="flex-row items-center justify-between">
-            <Text className="text-text-primary text-lg font-semibold">
-              {t.onboarding.sectionTitle}
-            </Text>
-            <View className="h-1 w-12 rounded-full bg-brand-saffron opacity-80" />
-          </View>
+        {/* Copy */}
+        <View className="mt-6 px-2">
+          <Text className="text-text-primary text-center text-3xl font-semibold leading-9">
+            {t.onboarding.title}
+          </Text>
+          <Text className="text-text-secondary mt-3 text-center text-base leading-6">
+            {t.onboarding.subtitle}
+          </Text>
+        </View>
 
-          {/* Name */}
-          <View className="mt-4">
-            <FieldLabel>{t.onboarding.nameLabel}</FieldLabel>
-            <TextInput
-              className={[inputBase, borderFor("name")].join(" ")}
-              placeholder={t.onboarding.namePlaceholder}
-              placeholderTextColor="#6B6B6B"
-              value={name}
-              onChangeText={setName}
-              autoCapitalize="words"
-              returnKeyType="next"
-              onFocus={() => setFocus("name")}
-              onBlur={() => setFocus(null)}
-            />
-          </View>
-
-          {/* DOB */}
-          <View className="mt-4">
-            <FieldLabel>{t.onboarding.dobLabel}</FieldLabel>
-            <Pressable
-              className={[
-                "mt-2 rounded-2xl border bg-bg-elevated px-4 py-3 active:opacity-90",
-                showDobPicker ? "border-brand-saffron" : "border-border-subtle",
-              ].join(" ")}
-              onPress={() => setShowDobPicker(true)}
-            >
-              <Text className={dob ? "text-text-primary" : "text-text-secondary"}>
-                {dob ? dobISO : t.onboarding.dobPlaceholder}
-              </Text>
-            </Pressable>
-
-            {showDobPicker && (
-              <View className="mt-2">
-                <DateTimePicker
-                  value={dob ?? new Date(2000, 0, 1)}
-                  mode="date"
-                  display={Platform.OS === "ios" ? "spinner" : "default"}
-                  onChange={onDobChange}
-                  maximumDate={new Date()}
-                />
-                {Platform.OS === "ios" && (
-                  <Pressable
-                    onPress={() => setShowDobPicker(false)}
-                    className="mt-2 self-start rounded-2xl bg-brand-primary px-4 py-2 active:opacity-90"
-                  >
-                    <Text className="text-text-inverse font-semibold">Done</Text>
-                  </Pressable>
-                )}
-              </View>
-            )}
-          </View>
-
-          {/* Place of birth */}
-          <View className="mt-4">
-            <FieldLabel>{t.onboarding.pobLabel}</FieldLabel>
-            <View className="mt-2 flex-row gap-3">
-              <TextInput
-                className={[inputBase, "flex-1", borderFor("city")].join(" ")}
-                placeholder={t.onboarding.cityPlaceholder}
-                placeholderTextColor="#6B6B6B"
-                value={birthCity}
-                onChangeText={setBirthCity}
-                onFocus={() => setFocus("city")}
-                onBlur={() => setFocus(null)}
-              />
-              <TextInput
-                className={[inputBase, "flex-1", borderFor("country")].join(" ")}
-                placeholder={t.onboarding.countryPlaceholder}
-                placeholderTextColor="#6B6B6B"
-                value={birthCountry}
-                onChangeText={setBirthCountry}
-                onFocus={() => setFocus("country")}
-                onBlur={() => setFocus(null)}
-              />
-            </View>
-          </View>
-
-          {/* Time of birth */}
-          <View className="mt-4">
-            <FieldLabel>{t.onboarding.tobLabel}</FieldLabel>
-            <TextInput
-              className={[
-                inputBase,
-                focus === "tob"
-                  ? "border-brand-saffron"
-                  : tob.length > 0 && !timeValid
-                    ? "border-state-danger"
-                    : "border-border-subtle",
-              ].join(" ")}
-              placeholder={t.onboarding.tobPlaceholder}
-              placeholderTextColor="#6B6B6B"
-              value={tob}
-              onChangeText={setTob}
-              keyboardType="numbers-and-punctuation"
-              autoCapitalize="none"
-              maxLength={8}
-              onFocus={() => setFocus("tob")}
-              onBlur={() => setFocus(null)}
-            />
-            <Text className="text-text-secondary mt-2 text-sm">
-              {t.onboarding.tobHelper}
-            </Text>
-            {tob.length > 0 && !timeValid && (
-              <Text className="mt-1 text-state-danger text-sm">
-                {t.common.invalidTime}
-              </Text>
-            )}
-          </View>
-
-          {/* CTA */}
+        {/* CTA pinned near bottom */}
+        <View className="flex-1 justify-end">
           <Pressable
-            onPress={handleNext}
-            disabled={!canContinue}
-            className={[
-              "mt-6 rounded-2xl px-5 py-4",
-              canContinue
-                ? "bg-brand-primary active:opacity-90"
-                : "bg-border-default opacity-70",
-            ].join(" ")}
+            onPress={handleStart}
+            className="rounded-full bg-brand-primary px-6 py-4 active:opacity-90 shadow-sm"
           >
             <Text className="text-text-inverse text-center text-base font-semibold">
-              {t.onboarding.next}
+              {t.onboarding.cta}
             </Text>
           </Pressable>
 
-          <Text className="text-text-secondary mt-3 text-center text-sm">
-            {t.onboarding.nextHint}
-          </Text>
+          {/* Small “breathing room” like Headspace */}
+          <View className="h-3" />
         </View>
-
-        {/* Gentle footer spacing */}
-        <View className="h-6" />
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </View>
+    </View>
   );
 }
