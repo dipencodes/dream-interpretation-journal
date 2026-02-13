@@ -15,6 +15,8 @@ if linkage != nil
 end
 
 target 'DreamInterpretationJournal' do
+  pod 'react-native-safe-area-context', :path => '../node_modules/react-native-safe-area-context'
+  pod 'RNSVG', :path => '../node_modules/react-native-svg'
   config = use_native_modules!
 
   use_react_native!(

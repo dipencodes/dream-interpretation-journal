@@ -1,14 +1,17 @@
 import "./global.css";
 import React from "react";
-import { Alert } from "react-native";
-import { OnboardingScreen } from "./src/screens/OnboardingScreen";
+import { NavigationContainer } from "@react-navigation/native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { RootNavigator } from "./src/navigation/RootNavigator";
+
+console.log("SafeAreaProvider is", SafeAreaProvider);
 
 export default function App() {
   return (
-    <OnboardingScreen
-      onNext={(details) => {
-        Alert.alert("Next (placeholder)", JSON.stringify(details, null, 2));
-      }}
-    />
+    <SafeAreaProvider>
+      <NavigationContainer>
+        <RootNavigator />
+      </NavigationContainer>
+    </SafeAreaProvider>
   );
 }
