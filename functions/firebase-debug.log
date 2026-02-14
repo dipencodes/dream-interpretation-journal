@@ -1,0 +1,254 @@
+[debug] [2026-02-14T15:29:08.572Z] ----------------------------------------------------------------------
+[debug] [2026-02-14T15:29:08.576Z] Command:       /Users/dipen/.nvm/versions/node/v20.20.0/bin/node /Users/dipen/.nvm/versions/node/v22.21.1/bin/firebase deploy --only functions
+[debug] [2026-02-14T15:29:08.577Z] CLI Version:   15.6.0
+[debug] [2026-02-14T15:29:08.577Z] Platform:      darwin
+[debug] [2026-02-14T15:29:08.577Z] Node Version:  v20.20.0
+[debug] [2026-02-14T15:29:08.577Z] Time:          Sat Feb 14 2026 09:29:08 GMT-0600 (Central Standard Time)
+[debug] [2026-02-14T15:29:08.577Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-02-14T15:29:10.217Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-02-14T15:29:10.217Z] > authorizing via signed-in user (splitpatron@gmail.com)
+[debug] [2026-02-14T15:29:10.217Z] [iam] checking project dream-interpretation-1a958 for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
+[debug] [2026-02-14T15:29:10.218Z] Checked if tokens are valid: true, expires at: 1771083982290
+[debug] [2026-02-14T15:29:10.218Z] Checked if tokens are valid: true, expires at: 1771083982290
+[debug] [2026-02-14T15:29:10.219Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/dream-interpretation-1a958:testIamPermissions [none]
+[debug] [2026-02-14T15:29:10.219Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/dream-interpretation-1a958:testIamPermissions  x-goog-user-project=dream-interpretation-1a958
+[debug] [2026-02-14T15:29:10.220Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/dream-interpretation-1a958:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2026-02-14T15:29:10.473Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/dream-interpretation-1a958:testIamPermissions 200
+[debug] [2026-02-14T15:29:10.473Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/dream-interpretation-1a958:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2026-02-14T15:29:10.474Z] Checked if tokens are valid: true, expires at: 1771083982290
+[debug] [2026-02-14T15:29:10.474Z] Checked if tokens are valid: true, expires at: 1771083982290
+[debug] [2026-02-14T15:29:10.474Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/dream-interpretation-1a958/serviceAccounts/dream-interpretation-1a958@appspot.gserviceaccount.com:testIamPermissions [none]
+[debug] [2026-02-14T15:29:10.474Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/dream-interpretation-1a958/serviceAccounts/dream-interpretation-1a958@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2026-02-14T15:29:10.640Z] <<< [apiv2][status] POST https://iam.googleapis.com/v1/projects/dream-interpretation-1a958/serviceAccounts/dream-interpretation-1a958@appspot.gserviceaccount.com:testIamPermissions 200
+[debug] [2026-02-14T15:29:10.640Z] <<< [apiv2][body] POST https://iam.googleapis.com/v1/projects/dream-interpretation-1a958/serviceAccounts/dream-interpretation-1a958@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[info] 
+[info] === Deploying to 'dream-interpretation-1a958'...
+[info] 
+[info] i  deploying functions 
+[debug] [2026-02-14T15:29:10.643Z] Checked if tokens are valid: true, expires at: 1771083982290
+[debug] [2026-02-14T15:29:10.643Z] Checked if tokens are valid: true, expires at: 1771083982290
+[debug] [2026-02-14T15:29:10.643Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/dream-interpretation-1a958/services/cloudresourcemanager.googleapis.com [none]
+[debug] [2026-02-14T15:29:10.643Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/dream-interpretation-1a958/services/cloudresourcemanager.googleapis.com  x-goog-user-project=dream-interpretation-1a958
+[debug] [2026-02-14T15:29:10.985Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/dream-interpretation-1a958/services/cloudresourcemanager.googleapis.com 200
+[debug] [2026-02-14T15:29:10.985Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/dream-interpretation-1a958/services/cloudresourcemanager.googleapis.com [omitted]
+[debug] [2026-02-14T15:29:11.006Z] Checked if tokens are valid: true, expires at: 1771083982290
+[debug] [2026-02-14T15:29:11.006Z] Checked if tokens are valid: true, expires at: 1771083982290
+[debug] [2026-02-14T15:29:11.007Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/dream-interpretation-1a958 [none]
+[debug] [2026-02-14T15:29:11.082Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/dream-interpretation-1a958 200
+[debug] [2026-02-14T15:29:11.082Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/dream-interpretation-1a958 {"projectNumber":"1051159962924","projectId":"dream-interpretation-1a958","lifecycleState":"ACTIVE","name":"dream-interpretation","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2026-02-13T20:51:20.258833Z"}
+[info] i  functions: preparing codebase default for deployment 
+[info] i  functions: ensuring required API cloudfunctions.googleapis.com is enabled... 
+[debug] [2026-02-14T15:29:11.083Z] Checked if tokens are valid: true, expires at: 1771083982290
+[debug] [2026-02-14T15:29:11.083Z] Checked if tokens are valid: true, expires at: 1771083982290
+[debug] [2026-02-14T15:29:11.084Z] Checked if tokens are valid: true, expires at: 1771083982290
+[debug] [2026-02-14T15:29:11.084Z] Checked if tokens are valid: true, expires at: 1771083982290
+[info] i  functions: ensuring required API cloudbuild.googleapis.com is enabled... 
+[debug] [2026-02-14T15:29:11.084Z] Checked if tokens are valid: true, expires at: 1771083982290
+[debug] [2026-02-14T15:29:11.084Z] Checked if tokens are valid: true, expires at: 1771083982290
+[info] i  artifactregistry: ensuring required API artifactregistry.googleapis.com is enabled... 
+[debug] [2026-02-14T15:29:11.085Z] Checked if tokens are valid: true, expires at: 1771083982290
+[debug] [2026-02-14T15:29:11.085Z] Checked if tokens are valid: true, expires at: 1771083982290
+[debug] [2026-02-14T15:29:11.085Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/dream-interpretation-1a958/services/cloudfunctions.googleapis.com [none]
+[debug] [2026-02-14T15:29:11.085Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/dream-interpretation-1a958/services/cloudfunctions.googleapis.com  x-goog-user-project=dream-interpretation-1a958
+[debug] [2026-02-14T15:29:11.085Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/dream-interpretation-1a958/services/runtimeconfig.googleapis.com [none]
+[debug] [2026-02-14T15:29:11.085Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/dream-interpretation-1a958/services/runtimeconfig.googleapis.com  x-goog-user-project=dream-interpretation-1a958
+[debug] [2026-02-14T15:29:11.087Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/dream-interpretation-1a958/services/cloudbuild.googleapis.com [none]
+[debug] [2026-02-14T15:29:11.088Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/dream-interpretation-1a958/services/cloudbuild.googleapis.com  x-goog-user-project=dream-interpretation-1a958
+[debug] [2026-02-14T15:29:11.089Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/dream-interpretation-1a958/services/artifactregistry.googleapis.com [none]
+[debug] [2026-02-14T15:29:11.090Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/dream-interpretation-1a958/services/artifactregistry.googleapis.com  x-goog-user-project=dream-interpretation-1a958
+[debug] [2026-02-14T15:29:11.289Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/dream-interpretation-1a958/services/cloudfunctions.googleapis.com 200
+[debug] [2026-02-14T15:29:11.289Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/dream-interpretation-1a958/services/cloudfunctions.googleapis.com [omitted]
+[info] ✔  functions: required API cloudfunctions.googleapis.com is enabled 
+[debug] [2026-02-14T15:29:11.405Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/dream-interpretation-1a958/services/cloudbuild.googleapis.com 200
+[debug] [2026-02-14T15:29:11.405Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/dream-interpretation-1a958/services/cloudbuild.googleapis.com [omitted]
+[info] ✔  functions: required API cloudbuild.googleapis.com is enabled 
+[debug] [2026-02-14T15:29:11.430Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/dream-interpretation-1a958/services/runtimeconfig.googleapis.com 200
+[debug] [2026-02-14T15:29:11.430Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/dream-interpretation-1a958/services/runtimeconfig.googleapis.com [omitted]
+[debug] [2026-02-14T15:29:11.454Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/dream-interpretation-1a958/services/artifactregistry.googleapis.com 200
+[debug] [2026-02-14T15:29:11.454Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/dream-interpretation-1a958/services/artifactregistry.googleapis.com [omitted]
+[info] ✔  artifactregistry: required API artifactregistry.googleapis.com is enabled 
+[debug] [2026-02-14T15:29:11.476Z] Checked if tokens are valid: true, expires at: 1771083982290
+[debug] [2026-02-14T15:29:11.476Z] Checked if tokens are valid: true, expires at: 1771083982290
+[debug] [2026-02-14T15:29:11.477Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/dream-interpretation-1a958/adminSdkConfig [none]
+[debug] [2026-02-14T15:29:11.665Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/dream-interpretation-1a958/adminSdkConfig 200
+[debug] [2026-02-14T15:29:11.665Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/dream-interpretation-1a958/adminSdkConfig {"projectId":"dream-interpretation-1a958","storageBucket":"dream-interpretation-1a958.firebasestorage.app"}
+[debug] [2026-02-14T15:29:11.666Z] Checked if tokens are valid: true, expires at: 1771083982290
+[debug] [2026-02-14T15:29:11.666Z] Checked if tokens are valid: true, expires at: 1771083982290
+[debug] [2026-02-14T15:29:11.666Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/dream-interpretation-1a958/configs [none]
+[debug] [2026-02-14T15:29:11.786Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/dream-interpretation-1a958/configs 200
+[debug] [2026-02-14T15:29:11.786Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/dream-interpretation-1a958/configs {"configs":[{"name":"projects/dream-interpretation-1a958/configs/openai"}]}
+[debug] [2026-02-14T15:29:11.786Z] Checked if tokens are valid: true, expires at: 1771083982290
+[debug] [2026-02-14T15:29:11.786Z] Checked if tokens are valid: true, expires at: 1771083982290
+[debug] [2026-02-14T15:29:11.787Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/dream-interpretation-1a958/configs/openai/variables [none]
+[debug] [2026-02-14T15:29:11.878Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/dream-interpretation-1a958/configs/openai/variables 200
+[debug] [2026-02-14T15:29:11.878Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/dream-interpretation-1a958/configs/openai/variables {"variables":[{"name":"projects/dream-interpretation-1a958/configs/openai/variables/key","updateTime":"2026-02-14T15:08:59.270371838Z"},{"name":"projects/dream-interpretation-1a958/configs/openai/variables/vector_hindu_store_id","updateTime":"2026-02-14T15:16:15.065407934Z"}]}
+[debug] [2026-02-14T15:29:11.879Z] Checked if tokens are valid: true, expires at: 1771083982290
+[debug] [2026-02-14T15:29:11.879Z] Checked if tokens are valid: true, expires at: 1771083982290
+[debug] [2026-02-14T15:29:11.879Z] Checked if tokens are valid: true, expires at: 1771083982290
+[debug] [2026-02-14T15:29:11.879Z] Checked if tokens are valid: true, expires at: 1771083982290
+[debug] [2026-02-14T15:29:11.879Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/dream-interpretation-1a958/configs/openai/variables/key [none]
+[debug] [2026-02-14T15:29:11.880Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/dream-interpretation-1a958/configs/openai/variables/vector_hindu_store_id [none]
+[debug] [2026-02-14T15:29:11.973Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/dream-interpretation-1a958/configs/openai/variables/key 200
+[debug] [2026-02-14T15:29:11.974Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/dream-interpretation-1a958/configs/openai/variables/key {"name":"projects/dream-interpretation-1a958/configs/openai/variables/key","updateTime":"2026-02-14T15:08:59.270371838Z","text":"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"}
+[debug] [2026-02-14T15:29:11.994Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/dream-interpretation-1a958/configs/openai/variables/vector_hindu_store_id 200
+[debug] [2026-02-14T15:29:11.994Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/dream-interpretation-1a958/configs/openai/variables/vector_hindu_store_id {"name":"projects/dream-interpretation-1a958/configs/openai/variables/vector_hindu_store_id","updateTime":"2026-02-14T15:16:15.065407934Z","text":"vs_69908f43b23081918a485b06a8fdeb88"}
+[debug] [2026-02-14T15:29:11.995Z] Validating nodejs source
+[warn] ⚠  functions: Runtime Node.js 20 will be deprecated on 2026-04-30 and will be decommissioned on 2026-10-30, after which you will not be able to deploy without upgrading. Consider upgrading now to avoid disruption. See https://cloud.google.com/functions/docs/runtime-support for full details on the lifecycle policy 
+[warn] ⚠  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] ⚠  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2026-02-14T15:29:12.822Z] > [functions] package.json contents: {
+  "name": "functions",
+  "description": "Cloud Functions for Firebase",
+  "scripts": {
+    "lint": "eslint .",
+    "serve": "firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "20"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "firebase-admin": "^11.8.0",
+    "firebase-functions": "^4.3.1",
+    "openai": "^6.22.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.15.0",
+    "eslint-config-google": "^0.14.0",
+    "firebase-functions-test": "^3.1.0"
+  },
+  "private": true
+}
+[debug] [2026-02-14T15:29:12.822Z] Building nodejs source
+[info] i  functions: Loading and analyzing source code for codebase default to determine what to deploy 
+[info] i  functions: You are using a version of firebase-functions SDK (4.9.0) that does not have support for the newest Firebase Extensions features. Please update firebase-functions SDK to >=5.1.0 to use them correctly 
+[debug] [2026-02-14T15:29:12.823Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-02-14T15:29:12.836Z] Found firebase-functions binary at '/Users/dipen/workspace/dream-interpretation-journal/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8090
+
+[debug] [2026-02-14T15:29:13.294Z] Got response from /__/functions.yaml {"endpoints":{"interpretDream":{"platform":"gcfv1","labels":{},"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"callableTrigger":{},"entryPoint":"interpretDream"}},"specVersion":"v1alpha1","requiredAPIs":[]}
+[info] i  functions: preparing functions directory for uploading... 
+[info] i  functions: packaged /Users/dipen/workspace/dream-interpretation-journal/functions (82.76 KB) for uploading 
+[debug] [2026-02-14T15:29:17.370Z] Checked if tokens are valid: true, expires at: 1771083982290
+[debug] [2026-02-14T15:29:17.370Z] Checked if tokens are valid: true, expires at: 1771083982290
+[debug] [2026-02-14T15:29:17.370Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v1/projects/dream-interpretation-1a958/locations/-/functions [none]
+[debug] [2026-02-14T15:29:17.964Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v1/projects/dream-interpretation-1a958/locations/-/functions 200
+[debug] [2026-02-14T15:29:17.965Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v1/projects/dream-interpretation-1a958/locations/-/functions {}
+[debug] [2026-02-14T15:29:17.965Z] Checked if tokens are valid: true, expires at: 1771083982290
+[debug] [2026-02-14T15:29:17.965Z] Checked if tokens are valid: true, expires at: 1771083982290
+[debug] [2026-02-14T15:29:17.966Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v2/projects/dream-interpretation-1a958/locations/-/functions filter=environment%3D%22GEN_2%22
+[debug] [2026-02-14T15:29:18.305Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v2/projects/dream-interpretation-1a958/locations/-/functions 200
+[debug] [2026-02-14T15:29:18.305Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v2/projects/dream-interpretation-1a958/locations/-/functions {}
+[debug] [2026-02-14T15:29:18.309Z] Checked if tokens are valid: true, expires at: 1771083982290
+[debug] [2026-02-14T15:29:18.309Z] Checked if tokens are valid: true, expires at: 1771083982290
+[debug] [2026-02-14T15:29:18.309Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/dream-interpretation-1a958 [none]
+[debug] [2026-02-14T15:29:18.481Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/dream-interpretation-1a958 200
+[debug] [2026-02-14T15:29:18.481Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/dream-interpretation-1a958 {"projectNumber":"1051159962924","projectId":"dream-interpretation-1a958","lifecycleState":"ACTIVE","name":"dream-interpretation","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2026-02-13T20:51:20.258833Z"}
+[debug] [2026-02-14T15:29:18.483Z] Checked if tokens are valid: true, expires at: 1771083982290
+[debug] [2026-02-14T15:29:18.483Z] Checked if tokens are valid: true, expires at: 1771083982290
+[debug] [2026-02-14T15:29:18.483Z] >>> [apiv2][query] POST https://cloudfunctions.googleapis.com/v1/projects/dream-interpretation-1a958/locations/us-central1/functions:generateUploadUrl [none]
+[debug] [2026-02-14T15:29:18.483Z] >>> [apiv2][body] POST https://cloudfunctions.googleapis.com/v1/projects/dream-interpretation-1a958/locations/us-central1/functions:generateUploadUrl {}
+[debug] [2026-02-14T15:29:29.024Z] <<< [apiv2][status] POST https://cloudfunctions.googleapis.com/v1/projects/dream-interpretation-1a958/locations/us-central1/functions:generateUploadUrl 200
+[debug] [2026-02-14T15:29:29.024Z] <<< [apiv2][body] POST https://cloudfunctions.googleapis.com/v1/projects/dream-interpretation-1a958/locations/us-central1/functions:generateUploadUrl {"uploadUrl":"https://storage.googleapis.com/uploads-597943171662.us-central1.cloudfunctions.appspot.com/1f89e971-3b08-44c4-a7f2-fb1699f4763b.zip?GoogleAccessId=service-1051159962924@gcf-admin-robot.iam.gserviceaccount.com&Expires=1771084769&Signature=Mb8hndrdcG4hmnMZJO2eOc%2FbDatsjHqo4AQWQmvVXoHMbM30U7tX47aALLrPZdiz1XJ7pPoW8nvJBwOM%2FJJ8%2FRSeR4if0u4upZ1eu6Si10Sevj3vjzz4ppqD9H8Xvlrk7mvhcGIvoT9N8zuf9eSTFEV8JVgqoBm2UTzcpRj8U8dWCmVZ6IILZokzAsXZtA6VyjZ7ThyJCmrk7egYQDo3GDGtlN2e6H0RyYYeVN%2BPUdB80AHllYa5epsJ0qsJBbkwouioRlvx1UXSTw8lmLN8%2FrYg%2FdK2VlkrVvW8K2bt0aY1Q4uYVgwAwuJnEkMD43FxUJ5KrAzQK5o11o0e%2B0%2F2Cg%3D%3D"}
+[debug] [2026-02-14T15:29:29.025Z] >>> [apiv2][query] PUT https://storage.googleapis.com/uploads-597943171662.us-central1.cloudfunctions.appspot.com/1f89e971-3b08-44c4-a7f2-fb1699f4763b.zip GoogleAccessId=service-1051159962924%40gcf-admin-robot.iam.gserviceaccount.com&Expires=1771084769&Signature=Mb8hndrdcG4hmnMZJO2eOc%2FbDatsjHqo4AQWQmvVXoHMbM30U7tX47aALLrPZdiz1XJ7pPoW8nvJBwOM%2FJJ8%2FRSeR4if0u4upZ1eu6Si10Sevj3vjzz4ppqD9H8Xvlrk7mvhcGIvoT9N8zuf9eSTFEV8JVgqoBm2UTzcpRj8U8dWCmVZ6IILZokzAsXZtA6VyjZ7ThyJCmrk7egYQDo3GDGtlN2e6H0RyYYeVN%2BPUdB80AHllYa5epsJ0qsJBbkwouioRlvx1UXSTw8lmLN8%2FrYg%2FdK2VlkrVvW8K2bt0aY1Q4uYVgwAwuJnEkMD43FxUJ5KrAzQK5o11o0e%2B0%2F2Cg%3D%3D
+[debug] [2026-02-14T15:29:29.025Z] >>> [apiv2][body] PUT https://storage.googleapis.com/uploads-597943171662.us-central1.cloudfunctions.appspot.com/1f89e971-3b08-44c4-a7f2-fb1699f4763b.zip [stream]
+[debug] [2026-02-14T15:29:29.434Z] <<< [apiv2][status] PUT https://storage.googleapis.com/uploads-597943171662.us-central1.cloudfunctions.appspot.com/1f89e971-3b08-44c4-a7f2-fb1699f4763b.zip 200
+[debug] [2026-02-14T15:29:29.434Z] <<< [apiv2][body] PUT https://storage.googleapis.com/uploads-597943171662.us-central1.cloudfunctions.appspot.com/1f89e971-3b08-44c4-a7f2-fb1699f4763b.zip [omitted]
+[info] ✔  functions: functions source uploaded successfully 
+[info] i  functions: creating Node.js 20 (1st Gen) function interpretDream(us-central1)... 
+[debug] [2026-02-14T15:29:29.438Z] Checked if tokens are valid: true, expires at: 1771083982290
+[debug] [2026-02-14T15:29:29.438Z] Checked if tokens are valid: true, expires at: 1771083982290
+[debug] [2026-02-14T15:29:29.438Z] >>> [apiv2][query] POST https://cloudfunctions.googleapis.com/v1/projects/dream-interpretation-1a958/locations/us-central1/functions [none]
+[debug] [2026-02-14T15:29:29.439Z] >>> [apiv2][body] POST https://cloudfunctions.googleapis.com/v1/projects/dream-interpretation-1a958/locations/us-central1/functions {"name":"projects/dream-interpretation-1a958/locations/us-central1/functions/interpretDream","sourceUploadUrl":"https://storage.googleapis.com/uploads-597943171662.us-central1.cloudfunctions.appspot.com/1f89e971-3b08-44c4-a7f2-fb1699f4763b.zip?GoogleAccessId=service-1051159962924@gcf-admin-robot.iam.gserviceaccount.com&Expires=1771084769&Signature=Mb8hndrdcG4hmnMZJO2eOc%2FbDatsjHqo4AQWQmvVXoHMbM30U7tX47aALLrPZdiz1XJ7pPoW8nvJBwOM%2FJJ8%2FRSeR4if0u4upZ1eu6Si10Sevj3vjzz4ppqD9H8Xvlrk7mvhcGIvoT9N8zuf9eSTFEV8JVgqoBm2UTzcpRj8U8dWCmVZ6IILZokzAsXZtA6VyjZ7ThyJCmrk7egYQDo3GDGtlN2e6H0RyYYeVN%2BPUdB80AHllYa5epsJ0qsJBbkwouioRlvx1UXSTw8lmLN8%2FrYg%2FdK2VlkrVvW8K2bt0aY1Q4uYVgwAwuJnEkMD43FxUJ5KrAzQK5o11o0e%2B0%2F2Cg%3D%3D","entryPoint":"interpretDream","runtime":"nodejs20","dockerRegistry":"ARTIFACT_REGISTRY","labels":{"deployment-tool":"cli-firebase","deployment-callable":"true","firebase-functions-hash":"cf2b60093ba636f0b1d6f26ead6972d46146f98c"},"httpsTrigger":{"securityLevel":"SECURE_ALWAYS"},"minInstances":null,"maxInstances":null,"ingressSettings":null,"environmentVariables":{"FIREBASE_CONFIG":"{\"projectId\":\"dream-interpretation-1a958\",\"storageBucket\":\"dream-interpretation-1a958.firebasestorage.app\"}","GCLOUD_PROJECT":"dream-interpretation-1a958","EVENTARC_CLOUD_EVENT_SOURCE":"projects/dream-interpretation-1a958/locations/us-central1/functions/interpretDream"},"serviceAccountEmail":null,"availableMemoryMb":null,"timeout":null,"vpcConnector":null,"vpcConnectorEgressSettings":null,"buildEnvironmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""}}
+[debug] [2026-02-14T15:29:31.277Z] <<< [apiv2][status] POST https://cloudfunctions.googleapis.com/v1/projects/dream-interpretation-1a958/locations/us-central1/functions 400
+[debug] [2026-02-14T15:29:31.277Z] <<< [apiv2][body] POST https://cloudfunctions.googleapis.com/v1/projects/dream-interpretation-1a958/locations/us-central1/functions {"error":{"code":400,"message":"Failed to create 1st Gen function projects/dream-interpretation-1a958/locations/us-central1/functions/interpretDream: Default service account '1051159962924-compute@developer.gserviceaccount.com' doesn't exist. Please recreate this account or specify a different account. Please visit https://cloud.google.com/functions/docs/troubleshooting for in-depth troubleshooting documentation.","status":"FAILED_PRECONDITION"}}
+[warn] ⚠  functions: failed to create function projects/dream-interpretation-1a958/locations/us-central1/functions/interpretDream 
+[error] Failed to create function projects/dream-interpretation-1a958/locations/us-central1/functions/interpretDream
+[debug] [2026-02-14T15:29:31.283Z] Total Function Deployment time: 1843
+[debug] [2026-02-14T15:29:31.283Z] 1 Functions Deployed
+[debug] [2026-02-14T15:29:31.284Z] 1 Functions Errored
+[debug] [2026-02-14T15:29:31.284Z] 0 Function Deployments Aborted
+[debug] [2026-02-14T15:29:31.284Z] Average Function Deployment time: 1842
+[info] 
+[info] Functions deploy had errors with the following functions:
+	interpretDream(us-central1)
+[debug] [2026-02-14T15:29:31.480Z] Checked if tokens are valid: true, expires at: 1771083982290
+[debug] [2026-02-14T15:29:31.480Z] Checked if tokens are valid: true, expires at: 1771083982290
+[debug] [2026-02-14T15:29:31.480Z] >>> [apiv2][query] GET https://artifactregistry.googleapis.com/v1/projects/dream-interpretation-1a958/locations/us-central1/repositories/gcf-artifacts [none]
+[debug] [2026-02-14T15:29:31.676Z] <<< [apiv2][status] GET https://artifactregistry.googleapis.com/v1/projects/dream-interpretation-1a958/locations/us-central1/repositories/gcf-artifacts 404
+[debug] [2026-02-14T15:29:31.676Z] <<< [apiv2][body] GET https://artifactregistry.googleapis.com/v1/projects/dream-interpretation-1a958/locations/us-central1/repositories/gcf-artifacts {"error":{"code":404,"message":"Requested entity was not found.","status":"NOT_FOUND"}}
+[debug] [2026-02-14T15:29:31.676Z] Failed to check artifact cleanup policy for region us-central1: Request to https://artifactregistry.googleapis.com/v1/projects/dream-interpretation-1a958/locations/us-central1/repositories/gcf-artifacts had HTTP Error: 404, Requested entity was not found. {"name":"FirebaseError","children":[],"context":{"body":{"error":{"code":404,"message":"Requested entity was not found.","status":"NOT_FOUND"}},"response":{"statusCode":404}},"exit":1,"message":"Request to https://artifactregistry.googleapis.com/v1/projects/dream-interpretation-1a958/locations/us-central1/repositories/gcf-artifacts had HTTP Error: 404, Requested entity was not found.","status":404}
+[debug] [2026-02-14T15:29:31.677Z] Functions deploy failed.
+[debug] [2026-02-14T15:29:31.677Z] {
+  "endpoint": {
+    "id": "interpretDream",
+    "project": "dream-interpretation-1a958",
+    "region": "us-central1",
+    "entryPoint": "interpretDream",
+    "platform": "gcfv1",
+    "runtime": "nodejs20",
+    "callableTrigger": {},
+    "labels": {
+      "deployment-tool": "cli-firebase"
+    },
+    "serviceAccount": null,
+    "ingressSettings": null,
+    "availableMemoryMb": null,
+    "timeoutSeconds": null,
+    "maxInstances": null,
+    "minInstances": null,
+    "vpc": null,
+    "environmentVariables": {
+      "FIREBASE_CONFIG": "{\"projectId\":\"dream-interpretation-1a958\",\"storageBucket\":\"dream-interpretation-1a958.firebasestorage.app\"}",
+      "GCLOUD_PROJECT": "dream-interpretation-1a958",
+      "EVENTARC_CLOUD_EVENT_SOURCE": "projects/dream-interpretation-1a958/locations/us-central1/functions/interpretDream"
+    },
+    "codebase": "default",
+    "targetedByOnly": false,
+    "hash": "cf2b60093ba636f0b1d6f26ead6972d46146f98c"
+  },
+  "op": "create",
+  "original": {
+    "name": "FirebaseError",
+    "children": [],
+    "context": {
+      "function": "projects/dream-interpretation-1a958/locations/us-central1/functions/interpretDream"
+    },
+    "exit": 1,
+    "message": "Failed to create function projects/dream-interpretation-1a958/locations/us-central1/functions/interpretDream",
+    "original": {
+      "name": "FirebaseError",
+      "children": [],
+      "context": {
+        "body": {
+          "error": {
+            "code": 400,
+            "message": "Failed to create 1st Gen function projects/dream-interpretation-1a958/locations/us-central1/functions/interpretDream: Default service account '1051159962924-compute@developer.gserviceaccount.com' doesn't exist. Please recreate this account or specify a different account. Please visit https://cloud.google.com/functions/docs/troubleshooting for in-depth troubleshooting documentation.",
+            "status": "FAILED_PRECONDITION"
+          }
+        },
+        "response": {
+          "statusCode": 400
+        }
+      },
+      "exit": 1,
+      "message": "Request to https://cloudfunctions.googleapis.com/v1/projects/dream-interpretation-1a958/locations/us-central1/functions had HTTP Error: 400, Failed to create 1st Gen function projects/dream-interpretation-1a958/locations/us-central1/functions/interpretDream: Default service account '1051159962924-compute@developer.gserviceaccount.com' doesn't exist. Please recreate this account or specify a different account. Please visit https://cloud.google.com/functions/docs/troubleshooting for in-depth troubleshooting documentation.",
+      "status": 400
+    },
+    "status": 400,
+    "code": 400
+  }
+}
+[debug] [2026-02-14T15:29:31.714Z] Error: Failed to create function interpretDream in region us-central1
+    at /Users/dipen/.nvm/versions/node/v22.21.1/lib/node_modules/firebase-tools/lib/deploy/functions/release/fabricator.js:54:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Fabricator.createV1Function (/Users/dipen/.nvm/versions/node/v22.21.1/lib/node_modules/firebase-tools/lib/deploy/functions/release/fabricator.js:193:32)
+    at async Fabricator.createEndpoint (/Users/dipen/.nvm/versions/node/v22.21.1/lib/node_modules/firebase-tools/lib/deploy/functions/release/fabricator.js:136:13)
+    at async handle (/Users/dipen/.nvm/versions/node/v22.21.1/lib/node_modules/firebase-tools/lib/deploy/functions/release/fabricator.js:91:17)
+[error] 
+[error] Error: There was an error deploying functions
