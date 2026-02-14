@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1051159962924",
+    "project_id": "dream-interpretation-1a958",
+    "storage_bucket": "dream-interpretation-1a958.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1051159962924:android:62a2ae0a357b41d822f889",
+        "android_client_info": {
+          "package_name": "com.dreamjournal.interpretation"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCQKeyBzqPWBYJA9swH8EeCJT6thLIgPSA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

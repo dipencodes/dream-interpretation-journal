@@ -8,11 +8,15 @@ import {
   TextInput,
   View,
   Image,
+  ActivityIndicator,
 } from "react-native";
 import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/types";
 import { t } from "../i18n";
+import { ensureAnonymousAuth } from "../services/auth";
+import app from "@react-native-firebase/app";
+import { getOrCreateUserGate } from "../services/userGate";
 
 type Props = NativeStackScreenProps<RootStackParamList, "DreamInput">;
 
@@ -47,6 +51,7 @@ export function DreamInputScreen({ navigation }: Props) {
   const [dreamText, setDreamText] = useState("");
   const [date, setDate] = useState(new Date());
   const [showPicker, setShowPicker] = useState(false);
+  const [isInterpreting, setIsInterpreting] = useState(false);
 
   const canContinue = useMemo(() => dreamText.trim().length >= 10, [dreamText]);
 
@@ -54,6 +59,48 @@ export function DreamInputScreen({ navigation }: Props) {
     if (Platform.OS === "android") setShowPicker(false);
     if (selected) setDate(selected);
   };
+
+  const onInterpretPress = async () => {
+    if (!canContinue || isInterpreting) return;
+  
+    try {
+      setIsInterpreting(true);
+  
+      // 1) Anonymous auth (on demand)
+      const { uid } = await ensureAnonymousAuth();
+  
+      // 2) Fetch or create user gate doc
+      const gate = await getOrCreateUserGate(uid);
+  
+      // 3) Gate logic (no RevenueCat yet; we’ll plug it in next)
+      if (gate.freeUsed) {
+        Alert.alert(
+          "Paywall (placeholder)",
+          "You’ve used your free interpretation. Next step: show RevenueCat paywall here."
+        );
+        return;
+      }
+  
+      // 4) Allowed (placeholder for Cloud Function call)
+      Alert.alert(
+        "Interpret (placeholder)",
+        `UID: ${uid}\nFree used: ${gate.freeUsed}\n\nDate: ${formatDate(date)}\n\n${dreamText.trim()}`
+      );
+  
+      // IMPORTANT:
+      // We are NOT setting freeUsed=true here.
+      // You asked to set it only after a successful interpretation returns.
+      // We’ll flip it once your Cloud Function returns success.
+    } catch (e: any) {
+      Alert.alert(
+        "Something went wrong",
+        e?.message ?? "Please try again."
+      );
+    } finally {
+      setIsInterpreting(false);
+    }
+  };
+  
 
   return (
     <KeyboardAvoidingView
@@ -158,7 +205,7 @@ export function DreamInputScreen({ navigation }: Props) {
               placeholderTextColor="#7A7A7A"
               multiline
               textAlignVertical="top"
-              style={{ height: 120 }}   // ← THIS FIXES IT
+              style={{ height: 120 }}
               className="text-text-primary text-base"
             />
 
@@ -172,22 +219,20 @@ export function DreamInputScreen({ navigation }: Props) {
         {/* CTA */}
         <View className="mt-6">
           <Pressable
-            onPress={() =>
-              Alert.alert(
-                "Interpret (placeholder)",
-                `Date: ${formatDate(date)}\n\n${dreamText.trim()}`
-              )
-            }
-            disabled={!canContinue}
+            onPress={onInterpretPress}
+            disabled={!canContinue || isInterpreting}
             className={[
-              "rounded-full px-6 py-4",
-              canContinue
+              "rounded-full px-6 py-4 flex-row items-center justify-center gap-2",
+              canContinue && !isInterpreting
                 ? "bg-brand-primary active:opacity-90"
                 : "bg-border-default opacity-70",
             ].join(" ")}
           >
+            {isInterpreting ? (
+              <ActivityIndicator />
+            ) : null}
             <Text className="text-text-inverse text-center text-base font-semibold">
-              {t.dreamInput.cta}
+              {isInterpreting ? "Signing in..." : t.dreamInput.cta}
             </Text>
           </Pressable>
         </View>
