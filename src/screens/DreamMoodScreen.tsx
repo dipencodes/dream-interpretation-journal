@@ -18,6 +18,7 @@ import {
   getDefaultInterpretMethod,
   type InterpretMethodKey,
 } from "../services/appPreferences";
+import { canRunAiInterpretation, consumeFreeUseIfNeeded } from "../services/paywallGate";
 import { MoodIcon } from "../components/MoodIcon";
 import { MOOD_OPTIONS, type MoodId } from "../constants/moods";
 
@@ -65,7 +66,7 @@ export function DreamMoodScreen({ route, navigation }: Props) {
     moodIcon: selectedMood?.id ?? undefined,
   });
 
-  const runInterpretation = async (method: InterpretMethodKey) => {
+  const runInterpretation = async (method: InterpretMethodKey, gateUid: string) => {
     await ensureAnonymousAuth();
 
     const functionsInstance = getFunctions(getApp());
@@ -91,6 +92,7 @@ export function DreamMoodScreen({ route, navigation }: Props) {
     };
 
     await saveDream(record);
+    await consumeFreeUseIfNeeded(gateUid);
     navigation.navigate("DreamSummary", { dream: record });
   };
 
@@ -111,6 +113,12 @@ export function DreamMoodScreen({ route, navigation }: Props) {
   const onSaveAndInterpret = async () => {
     if (!selectedMood || isSaving || isRunningAi) return;
     try {
+      const gate = await canRunAiInterpretation();
+      if (!gate.allowed) {
+        navigation.navigate("Paywall");
+        return;
+      }
+
       const defaultMethod = await getDefaultInterpretMethod();
       if (!defaultMethod) {
         navigation.navigate("DreamInterpretMethod", {
@@ -123,7 +131,7 @@ export function DreamMoodScreen({ route, navigation }: Props) {
         return;
       }
       setIsRunningAi(true);
-      await runInterpretation(defaultMethod);
+      await runInterpretation(defaultMethod, gate.uid);
     } catch (error: any) {
       Alert.alert("Error", error?.message ?? t.dreamMood.interpretError);
     } finally {

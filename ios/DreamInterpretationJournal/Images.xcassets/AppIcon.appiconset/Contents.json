@@ -43,11 +43,13 @@
       "size" : "40x40"
     },
     {
+      "filename" : "AppIcon-60@2x~car 1.png",
       "idiom" : "iphone",
       "scale" : "2x",
       "size" : "60x60"
     },
     {
+      "filename" : "AppIcon-60@3x~car 1.png",
       "idiom" : "iphone",
       "scale" : "3x",
       "size" : "60x60"
@@ -89,11 +91,13 @@
       "size" : "40x40"
     },
     {
+      "filename" : "AppIcon@2x~ipad 1.png",
       "idiom" : "ipad",
       "scale" : "2x",
       "size" : "76x76"
     },
     {
+      "filename" : "AppIcon-83.5@2x~ipad 1.png",
       "idiom" : "ipad",
       "scale" : "2x",
       "size" : "83.5x83.5"
@@ -111,6 +115,7 @@
       "size" : "60x60"
     },
     {
+      "filename" : "AppIcon~ios-marketing 1.png",
       "idiom" : "ios-marketing",
       "scale" : "1x",
       "size" : "1024x1024"

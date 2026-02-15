@@ -1402,6 +1402,8 @@ PODS:
     - nanopb/encode (= 3.30910.0)
   - nanopb/decode (3.30910.0)
   - nanopb/encode (3.30910.0)
+  - PurchasesHybridCommon (17.37.0):
+    - RevenueCat (= 5.58.0)
   - RCT-Folly (2024.11.18.00):
     - boost
     - DoubleConversion
@@ -3959,6 +3961,7 @@ PODS:
     - React-utils (= 0.83.1)
     - SocketRocket
   - RecaptchaInterop (101.0.0)
+  - RevenueCat (5.58.0)
   - RNCAsyncStorage (2.2.0):
     - boost
     - DoubleConversion
@@ -4138,6 +4141,9 @@ PODS:
     - React-Core
     - RNNotifee/NotifeeCore (= 9.1.8)
   - RNNotifee/NotifeeCore (9.1.8):
+    - React-Core
+  - RNPurchases (9.9.0):
+    - PurchasesHybridCommon (= 17.37.0)
     - React-Core
   - RNReanimated (4.2.1):
     - boost
@@ -4532,6 +4538,7 @@ DEPENDENCIES:
   - "RNFBFirestore (from `../node_modules/@react-native-firebase/firestore`)"
   - "RNFBFunctions (from `../node_modules/@react-native-firebase/functions`)"
   - "RNNotifee (from `../node_modules/@notifee/react-native`)"
+  - RNPurchases (from `../node_modules/react-native-purchases`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSVG (from `../node_modules/react-native-svg`)
@@ -4561,7 +4568,9 @@ SPEC REPOS:
     - GTMSessionFetcher
     - leveldb-library
     - nanopb
+    - PurchasesHybridCommon
     - RecaptchaInterop
+    - RevenueCat
     - SocketRocket
 
 EXTERNAL SOURCES:
@@ -4736,6 +4745,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-firebase/functions"
   RNNotifee:
     :path: "../node_modules/@notifee/react-native"
+  RNPurchases:
+    :path: "../node_modules/react-native-purchases"
   RNReanimated:
     :path: "../node_modules/react-native-reanimated"
   RNScreens:
@@ -4775,6 +4786,7 @@ SPEC CHECKSUMS:
   hermes-engine: 34a5ffb07931b16c251e6691d76b074b85d8e2fe
   leveldb-library: cc8b8f8e013647a295ad3f8cd2ddf49a6f19be19
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
+  PurchasesHybridCommon: 5e012ecbd932092af743a8cec6bf55b605f2d89d
   RCT-Folly: 59ec0ac1f2f39672a0c6e6cecdd39383b764646f
   RCTDeprecation: a41bbdd9af30bf2e5715796b313e44ec43eefff1
   RCTRequired: 7be34aabb0b77c3cefe644528df0fa0afad4e4d0
@@ -4847,6 +4859,7 @@ SPEC CHECKSUMS:
   ReactCodegen: 0e88072391201f99a9ce48e9ad27310d63b336ae
   ReactCommon: 136c3863bf14312a58944f674691f2c5874deafb
   RecaptchaInterop: 11e0b637842dfb48308d242afc3f448062325aba
+  RevenueCat: 88bb4229115b2badcce0e5a97f3dd8cc952b38c8
   RNCAsyncStorage: 8857fb173af29664cb90897903902dc8533e36cc
   RNDateTimePicker: 239dc0c70f94e440d815763d3bace9c4ea73ae27
   RNFBApp: 58f13fa19e95d50e210c54c1dff0b6e1ea4235a8
@@ -4854,6 +4867,7 @@ SPEC CHECKSUMS:
   RNFBFirestore: e92bbaf2c77c9c61aaaccc3f32ef2bab2a2f714b
   RNFBFunctions: 67642a878755f49a6372b12c9974783722569537
   RNNotifee: 4a6ee5c7deaf00e005050052d73ee6315dff7ec9
+  RNPurchases: 1b024f4867ab4c25faec1463bcad6ccdf3256250
   RNReanimated: 0a23a0a9721f450580f0fdf04b9ae928cd22915a
   RNScreens: 32d204189c8c164da3aef640b6d1d8721c25a86f
   RNSVG: 4d484ec4a8cb484c1c0e33972670724e194dba09

@@ -19,6 +19,7 @@ import {
   setDefaultInterpretMethod,
   type InterpretMethodKey,
 } from "../services/appPreferences";
+import { canRunAiInterpretation, consumeFreeUseIfNeeded } from "../services/paywallGate";
 
 type Props = NativeStackScreenProps<RootStackParamList, "DreamInterpretMethod">;
 
@@ -96,6 +97,12 @@ export function DreamInterpretMethodScreen({ route, navigation }: Props) {
   const onInterpret = async () => {
     if (!selectedMethod || isInterpreting) return;
     try {
+      const gate = await canRunAiInterpretation();
+      if (!gate.allowed) {
+        navigation.navigate("Paywall");
+        return;
+      }
+
       setIsInterpreting(true);
       await ensureAnonymousAuth();
 
@@ -131,6 +138,7 @@ export function DreamInterpretMethodScreen({ route, navigation }: Props) {
       };
 
       await saveDream(record);
+      await consumeFreeUseIfNeeded(gate.uid);
       navigation.navigate("DreamSummary", { dream: record });
     } catch (error: any) {
       Alert.alert("Error", error?.message ?? t.dreamInterpretMethod.error);

@@ -20,6 +20,7 @@ import {
   type MethodInterpretation,
 } from "../services/dreamStorage";
 import type { InterpretMethodKey } from "../services/appPreferences";
+import { canRunAiInterpretation, consumeFreeUseIfNeeded } from "../services/paywallGate";
 import { MoodIcon } from "../components/MoodIcon";
 import { getMoodOptionById, getMoodOptionByTitle } from "../constants/moods";
 
@@ -171,6 +172,12 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
   ) => {
     if (isInterpretingMethod) return;
     try {
+      const gate = await canRunAiInterpretation();
+      if (!gate.allowed) {
+        navigation.navigate("Paywall");
+        return;
+      }
+
       setIsInterpretingMethod(method);
       await ensureAnonymousAuth();
 
@@ -198,6 +205,7 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
       };
 
       await upsertDream(updatedDream);
+      await consumeFreeUseIfNeeded(gate.uid);
       setDream(updatedDream);
       setCurrentMethod(method);
       setExpandedInterpretation(false);

@@ -9,6 +9,7 @@ import { JournalScreen } from "../screens/JournalScreen";
 import { SettingsScreen } from "../screens/SettingsScreen";
 import { InterpretationMethodSettingsScreen } from "../screens/InterpretationMethodSettingsScreen";
 import { NotificationSettingsScreen } from "../screens/NotificationSettingsScreen";
+import { PaywallScreen } from "../screens/PaywallScreen";
 import { DreamInputScreen } from "../screens/DreamInputScreen";
 import { DreamMoodScreen } from "../screens/DreamMoodScreen";
 import { DreamInterpretMethodScreen } from "../screens/DreamInterpretMethodScreen";
@@ -69,6 +70,7 @@ export function RootNavigator() {
         name="NotificationSettings"
         component={NotificationSettingsScreen}
       />
+      <Stack.Screen name="Paywall" component={PaywallScreen} />
       <Stack.Screen name="DreamInput" component={DreamInputScreen} />
       <Stack.Screen name="DreamMood" component={DreamMoodScreen} />
       <Stack.Screen

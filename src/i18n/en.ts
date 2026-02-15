@@ -101,5 +101,27 @@ export const en = {
     saveError: "Could not update notifications settings. Please try again.",
   },
 
+  paywall: {
+    title: "Unlock unlimited AI interpretations",
+    subtitle:
+      "You have used your free interpretation. Subscribe to continue interpreting with all methods.",
+    planWeekly: "Weekly",
+    planMonthly: "Monthly",
+    planYearly: "Yearly",
+    subscribeCta: "Continue",
+    restoreCta: "Restore purchases",
+    retryCta: "Retry",
+    notNowCta: "Not now",
+    restoringLabel: "Restoring...",
+    errorTitle: "Subscription",
+    loadError: "Could not load subscription plans right now.",
+    offeringUnavailable: "Subscription plans are not available yet. Please try again shortly.",
+    purchaseError: "Could not complete purchase. Please try again.",
+    purchaseNotActiveMessage:
+      "Purchase completed but premium was not activated yet. Please try restoring purchases.",
+    restoreError: "Could not restore purchases. Please try again.",
+    restoreNoActiveSubMessage: "No active subscription was found to restore.",
+  },
+
   common: {},
 } as const;

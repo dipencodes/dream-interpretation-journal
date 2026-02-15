@@ -34,3 +34,16 @@ export async function getOrCreateUserGate(uid: string): Promise<UserGate> {
   const data = snap.data() as { freeUsed?: boolean } | undefined;
   return { uid, freeUsed: Boolean(data?.freeUsed) };
 }
+
+export async function setFreeUsed(uid: string, used: boolean): Promise<void> {
+  const db = getFirestore(getApp());
+  const userRef = doc(collection(db, "users"), uid);
+  await setDoc(
+    userRef,
+    {
+      freeUsed: used,
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true }
+  );
+}
