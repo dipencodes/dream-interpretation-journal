@@ -7,16 +7,36 @@ import notifee, {
   type TimestampTrigger,
 } from "@notifee/react-native";
 import { trackAppOpenedFromNotification } from "./tracking";
+import { getNotificationPreferences } from "./notificationPreferences";
+import { hasDreamLoggedToday } from "./dreamStorage";
 
 const CHANNEL_ID = "dream_morning_reminders";
 const MORNING_NOTIFICATION_ID = "dream_morning_notification";
 
-function getNextTriggerTimestamp(hour: number, minute: number): number {
+function isSameLocalDate(a: Date, b: Date): boolean {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
+
+function getNextTriggerTimestamp(
+  hour: number,
+  minute: number,
+  skipToday: boolean
+): number {
   const next = new Date();
   next.setHours(hour, minute, 0, 0);
+
   if (next.getTime() <= Date.now()) {
     next.setDate(next.getDate() + 1);
   }
+
+  if (skipToday && isSameLocalDate(next, new Date())) {
+    next.setDate(next.getDate() + 1);
+  }
+
   return next.getTime();
 }
 
@@ -46,6 +66,8 @@ export async function scheduleMorningReminder(
   hour: number,
   minute: number
 ): Promise<void> {
+  const hasDreamToday = await hasDreamLoggedToday();
+
   const channelId = await notifee.createChannel({
     id: CHANNEL_ID,
     name: "Morning reminders",
@@ -54,7 +76,7 @@ export async function scheduleMorningReminder(
 
   const trigger: TimestampTrigger = {
     type: TriggerType.TIMESTAMP,
-    timestamp: getNextTriggerTimestamp(hour, minute),
+    timestamp: getNextTriggerTimestamp(hour, minute, hasDreamToday),
     repeatFrequency: RepeatFrequency.DAILY,
     alarmManager: true,
   };
@@ -76,6 +98,15 @@ export async function scheduleMorningReminder(
   );
 }
 
+export async function refreshMorningReminderSchedule(): Promise<void> {
+  const preferences = await getNotificationPreferences();
+  if (!preferences.morningEnabled) {
+    return;
+  }
+
+  await scheduleMorningReminder(preferences.morningHour, preferences.morningMinute);
+}
+
 type NotificationOpenSource =
   | "cold_start"
   | "foreground_press"
@@ -89,7 +120,9 @@ function buildNotificationOpenDedupKey(
   return `${source}:${notificationId ?? "none"}:${pressActionId ?? "none"}`;
 }
 
-export function setupNotificationOpenTracking(): () => void {
+export function setupNotificationOpenTracking(
+  onNotificationOpen?: () => void
+): () => void {
   const handledOpenKeys = new Set<string>();
 
   const trackOpenOnce = async ({
@@ -111,11 +144,15 @@ export function setupNotificationOpenTracking(): () => void {
     }
 
     handledOpenKeys.add(dedupeKey);
-    await trackAppOpenedFromNotification({
-      notification_id: notificationId ?? null,
-      press_action_id: pressActionId ?? null,
-      open_source: source,
-    });
+    try {
+      await trackAppOpenedFromNotification({
+        notification_id: notificationId ?? null,
+        press_action_id: pressActionId ?? null,
+        open_source: source,
+      });
+    } finally {
+      onNotificationOpen?.();
+    }
   };
 
   notifee

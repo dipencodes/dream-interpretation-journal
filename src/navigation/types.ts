@@ -8,7 +8,11 @@ export type RootStackParamList = {
   Settings: undefined;
   InterpretationMethodSettings: undefined;
   NotificationSettings: undefined;
-  Paywall: undefined;
+  Paywall:
+    | {
+        entry?: "gate" | "direct";
+      }
+    | undefined;
   DreamInput: undefined;
   DreamMood: {
     dreamText: string;

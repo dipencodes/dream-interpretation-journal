@@ -19,6 +19,7 @@ import {
   type InterpretMethodKey,
 } from "../services/appPreferences";
 import { canRunAiInterpretation, consumeFreeUseIfNeeded } from "../services/paywallGate";
+import { refreshMorningReminderSchedule } from "../services/notifications";
 import {
   normalizeTrackingErrorCode,
   trackInterpretationFailed,
@@ -108,6 +109,9 @@ export function DreamMoodScreen({ route, navigation }: Props) {
       };
 
       await saveDream(record);
+      await refreshMorningReminderSchedule().catch(() => {
+        // Keep dream save flow resilient if notifications cannot be refreshed.
+      });
       await trackInterpretationSucceeded({ method, source_screen: "dream_mood" });
       await consumeFreeUseIfNeeded(gateUid);
       navigation.navigate("DreamSummary", { dream: record });
@@ -127,6 +131,9 @@ export function DreamMoodScreen({ route, navigation }: Props) {
       setIsSaving(true);
       const record = buildBaseRecord();
       await saveDream(record);
+      await refreshMorningReminderSchedule().catch(() => {
+        // Keep dream save flow resilient if notifications cannot be refreshed.
+      });
       navigation.navigate("DreamSummary", { dream: record });
     } catch (error: any) {
       Alert.alert("Error", error?.message ?? t.dreamMood.saveError);

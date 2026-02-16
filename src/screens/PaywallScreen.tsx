@@ -19,8 +19,9 @@ import {
 
 type Props = NativeStackScreenProps<RootStackParamList, "Paywall">;
 
-export function PaywallScreen({ navigation }: Props) {
-  const [isPresenting, setIsPresenting] = useState(true);
+export function PaywallScreen({ navigation, route }: Props) {
+  const isDirectEntry = route.params?.entry === "direct";
+  const [isPresenting, setIsPresenting] = useState(isDirectEntry);
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const presentRevenueCatPaywall = useCallback(async () => {
@@ -30,7 +31,6 @@ export function PaywallScreen({ navigation }: Props) {
     try {
       const { uid } = await ensureAnonymousAuth();
       await syncRevenueCatUser(uid);
-      await trackPaywallViewed();
 
       const paywallResult = await RevenueCatUI.presentPaywallIfNeeded({
         requiredEntitlementIdentifier: REVENUECAT_ENTITLEMENT_ID,
@@ -67,13 +67,17 @@ export function PaywallScreen({ navigation }: Props) {
 
       if (paywallResult === PAYWALL_RESULT.CANCELLED) {
         await trackPaywallClosed({ result: "cancelled" });
-        navigation.goBack();
+        if (isDirectEntry) {
+          navigation.goBack();
+        }
         return;
       }
 
       if (paywallResult === PAYWALL_RESULT.NOT_PRESENTED) {
         await trackPaywallClosed({ result: "not_presented" });
-        navigation.goBack();
+        if (isDirectEntry) {
+          navigation.goBack();
+        }
         return;
       }
 
@@ -84,12 +88,15 @@ export function PaywallScreen({ navigation }: Props) {
     } finally {
       setIsPresenting(false);
     }
-  }, [navigation]);
+  }, [isDirectEntry, navigation]);
 
   useFocusEffect(
     useCallback(() => {
-      presentRevenueCatPaywall();
-    }, [presentRevenueCatPaywall])
+      trackPaywallViewed();
+      if (isDirectEntry) {
+        presentRevenueCatPaywall();
+      }
+    }, [isDirectEntry, presentRevenueCatPaywall])
   );
 
   return (
@@ -122,15 +129,46 @@ export function PaywallScreen({ navigation }: Props) {
       </View>
 
       <View className="flex-1 px-6 pt-14">
-        <Text className="mt-5 text-text-primary text-4xl font-semibold">{t.paywall.title}</Text>
-        <Text className="mt-3 text-text-secondary text-[15px] leading-6">
-          {t.paywall.subtitle}
-        </Text>
+        {!isDirectEntry ? (
+          <>
+            <Text className="mt-5 text-text-primary text-4xl font-semibold">{t.paywall.title}</Text>
+            <Text className="mt-3 text-text-secondary text-[15px] leading-6">
+              {t.paywall.subtitle}
+            </Text>
+          </>
+        ) : null}
 
         {isPresenting ? (
-          <View className="items-center py-10">
+          <View className={isDirectEntry ? "items-center justify-center py-16" : "items-center py-8"}>
             <ActivityIndicator />
           </View>
+        ) : null}
+
+        {!isDirectEntry ? (
+          <>
+            <Pressable
+              onPress={presentRevenueCatPaywall}
+              disabled={isPresenting}
+              className={[
+                "mt-7 items-center rounded-full bg-brand-primary px-5 py-3 active:opacity-90",
+                isPresenting ? "opacity-70" : "",
+              ].join(" ")}
+            >
+              <Text className="text-text-inverse text-base font-semibold">
+                {t.paywall.explorePremiumCta}
+              </Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() => navigation.goBack()}
+              className="mt-4 items-center rounded-full border border-border-default bg-bg-surface px-5 py-3 active:opacity-90"
+              disabled={isPresenting}
+            >
+              <Text className="text-text-secondary text-sm font-semibold">
+                {t.paywall.keepUsingFreeCta}
+              </Text>
+            </Pressable>
+          </>
         ) : null}
 
         {loadError ? (
@@ -142,13 +180,6 @@ export function PaywallScreen({ navigation }: Props) {
           </View>
         ) : null}
 
-        <Pressable
-          onPress={() => navigation.goBack()}
-          className="mt-5 self-center"
-          disabled={isPresenting}
-        >
-          <Text className="text-text-secondary text-sm font-semibold">{t.paywall.notNowCta}</Text>
-        </Pressable>
       </View>
     </View>
   );

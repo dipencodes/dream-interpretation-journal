@@ -1,6 +1,6 @@
 export const en = {
   onboarding: {
-    title: "We’re starting now — here we go on this journey!",
+    title: "Every Dream has a meaning! Find yours'",
     subtitle:
       "Capture your dreams, spot patterns, and get gentle AI insights whenever you’re ready.",
     cta: "Start Interpreting your Dreams",
@@ -15,6 +15,7 @@ export const en = {
     helper:
       "Tip: include emotions, people, places, colors, and anything that felt important.",
     cta: "Continue",
+    addLaterCta: "I'll add later",
     back: "Back",
   },
 
@@ -64,11 +65,15 @@ export const en = {
     positiveDreamsLabel: "Positive Dreams",
     negativeDreamsLabel: "Negative Dreams",
     quickStatsSeeMoreCta: "See more",
+    quickStatsAddDreamCta: "Add dream",
     recentSectionTitle: "Recent dream",
     recentSectionSubtext: "Your latest saved dream.",
     viewAllDreamsCta: "View all dreams",
     emptyRecent: "No dreams saved yet. Log a new dream to begin your journal.",
     logNewDreamCta: "Log New Dream",
+    todayDreamPromptTitle: "Remember your dream from last night?",
+    todayDreamPromptAddCta: "Add It",
+    todayDreamPromptDismissCta: "I forgot",
     recommendationTitle: "Recommendation",
     recommendationCardTitle: "Enable morning notifications",
     recommendationCardSubtitle:
@@ -133,6 +138,8 @@ export const en = {
     planYearly: "Yearly",
     subscribeCta: "Continue",
     restoreCta: "Restore purchases",
+    explorePremiumCta: "Explore Premium",
+    keepUsingFreeCta: "Keep using free Version",
     retryCta: "Retry",
     notNowCta: "Not now",
     restoringLabel: "Restoring...",

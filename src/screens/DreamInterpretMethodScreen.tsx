@@ -20,6 +20,7 @@ import {
   type InterpretMethodKey,
 } from "../services/appPreferences";
 import { canRunAiInterpretation, consumeFreeUseIfNeeded } from "../services/paywallGate";
+import { refreshMorningReminderSchedule } from "../services/notifications";
 import {
   normalizeTrackingErrorCode,
   trackInterpretationFailed,
@@ -157,6 +158,9 @@ export function DreamInterpretMethodScreen({ route, navigation }: Props) {
       };
 
       await saveDream(record);
+      await refreshMorningReminderSchedule().catch(() => {
+        // Keep dream save flow resilient if notifications cannot be refreshed.
+      });
       await trackInterpretationSucceeded({
         method: selectedMethod,
         source_screen: "dream_interpret_method",

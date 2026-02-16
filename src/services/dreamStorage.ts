@@ -8,6 +8,27 @@ import {
 
 const STORAGE_KEY = "dreams";
 
+export function toLocalDateKey(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function parseDreamDateToLocalDate(dreamDate: string): Date | null {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dreamDate)) {
+    const [year, month, day] = dreamDate.split("-").map(Number);
+    return new Date(year, month - 1, day);
+  }
+
+  const parsed = Date.parse(dreamDate);
+  if (Number.isNaN(parsed)) {
+    return null;
+  }
+
+  return new Date(parsed);
+}
+
 export type MethodInterpretation = {
   summary?: string | null;
   interpretation: string;
@@ -27,6 +48,16 @@ export type DreamRecord = {
   moodIcon?: string;
   interpretations?: Partial<Record<InterpretMethodKey, MethodInterpretation>>;
 };
+
+export function getDreamLoggedDateKey(dream: DreamRecord): string | null {
+  const createdAt = Number(dream.createdAt);
+  if (Number.isFinite(createdAt) && createdAt > 0) {
+    return toLocalDateKey(new Date(createdAt));
+  }
+
+  const parsedDreamDate = parseDreamDateToLocalDate(dream.dreamDate);
+  return parsedDreamDate ? toLocalDateKey(parsedDreamDate) : null;
+}
 
 export async function saveDream(record: DreamRecord) {
   const existing = await AsyncStorage.getItem(STORAGE_KEY);
@@ -51,6 +82,12 @@ export async function saveDream(record: DreamRecord) {
 export async function getDreams(): Promise<DreamRecord[]> {
   const data = await AsyncStorage.getItem(STORAGE_KEY);
   return data ? JSON.parse(data) : [];
+}
+
+export async function hasDreamLoggedToday(): Promise<boolean> {
+  const dreams = await getDreams();
+  const todayKey = toLocalDateKey(new Date());
+  return dreams.some((dream) => getDreamLoggedDateKey(dream) === todayKey);
 }
 
 export async function upsertDream(record: DreamRecord) {

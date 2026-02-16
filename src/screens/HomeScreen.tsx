@@ -10,7 +10,12 @@ import {
 import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/types";
-import { getDreams, type DreamRecord } from "../services/dreamStorage";
+import {
+  getDreamLoggedDateKey,
+  getDreams,
+  toLocalDateKey,
+  type DreamRecord,
+} from "../services/dreamStorage";
 import { getPreferredName, setPreferredName } from "../services/userProfile";
 import { t } from "../i18n";
 import { BottomTabDock } from "../components/BottomTabDock";
@@ -20,6 +25,10 @@ import {
   POSITIVE_MOOD_IDS,
 } from "../constants/moods";
 import { getNotificationPreferences } from "../services/notificationPreferences";
+import {
+  getHomeDreamPromptDismissedDate,
+  setHomeDreamPromptDismissedDate,
+} from "../services/appPreferences";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Home">;
 type StatsWindowDays = 7 | 30 | 90;
@@ -99,6 +108,9 @@ export function HomeScreen({ navigation }: Props) {
   const [isEditingName, setIsEditingName] = useState(false);
   const [statsWindowDays, setStatsWindowDays] = useState<StatsWindowDays>(7);
   const [isMorningNotificationEnabled, setIsMorningNotificationEnabled] = useState(false);
+  const [dreamPromptDismissedDateKey, setDreamPromptDismissedDateKey] = useState<string | null>(
+    null
+  );
 
   function getTimeGreeting() {
     const hour = new Date().getHours();
@@ -110,16 +122,18 @@ export function HomeScreen({ navigation }: Props) {
   const loadHomeData = useCallback(async () => {
     try {
       setIsLoading(true);
-      const [dreams, name, notificationPreferences] = await Promise.all([
+      const [dreams, name, notificationPreferences, dismissedDateKey] = await Promise.all([
         getDreams(),
         getPreferredName(),
         getNotificationPreferences(),
+        getHomeDreamPromptDismissedDate(),
       ]);
       setAllDreams(dreams);
       setRecentDreams(dreams.slice(0, 1));
       setPreferredNameState(name);
       setNameInput(name ?? "");
       setIsMorningNotificationEnabled(notificationPreferences.morningEnabled);
+      setDreamPromptDismissedDateKey(dismissedDateKey);
     } finally {
       setIsLoading(false);
     }
@@ -194,6 +208,19 @@ export function HomeScreen({ navigation }: Props) {
       positivePercent,
     };
   }, [allDreams, statsWindowDays]);
+
+  const todayDateKey = useMemo(() => toLocalDateKey(new Date()), []);
+  const isTodayDreamPromptDismissed = dreamPromptDismissedDateKey === todayDateKey;
+  const hasDreamToday = useMemo(
+    () => allDreams.some((dream) => getDreamLoggedDateKey(dream) === todayDateKey),
+    [allDreams, todayDateKey]
+  );
+  const showTodayDreamPrompt = !isLoading && !hasDreamToday && !isTodayDreamPromptDismissed;
+
+  const onDismissTodayDreamPrompt = async () => {
+    await setHomeDreamPromptDismissedDate(todayDateKey);
+    setDreamPromptDismissedDateKey(todayDateKey);
+  };
 
   return (
     <View className="flex-1 bg-bg-base">
@@ -272,6 +299,43 @@ export function HomeScreen({ navigation }: Props) {
           ) : null}
         </View>
 
+        {showTodayDreamPrompt ? (
+          <View
+            className="mt-5 rounded-3xl border border-border-subtle bg-bg-surface p-5"
+            style={{
+              shadowColor: "#000",
+              shadowOpacity: 0.06,
+              shadowRadius: 18,
+              shadowOffset: { width: 0, height: 10 },
+              elevation: 3,
+            }}
+          >
+            <Text className="text-text-primary text-xl font-semibold">
+              {t.home.todayDreamPromptTitle}
+            </Text>
+
+            <View className="mt-4 flex-row items-center gap-3">
+              <Pressable
+                onPress={() => navigation.navigate("DreamInput")}
+                className="rounded-full bg-brand-primary px-5 py-2.5 active:opacity-90"
+              >
+                <Text className="text-text-inverse text-sm font-semibold">
+                  {t.home.todayDreamPromptAddCta}
+                </Text>
+              </Pressable>
+
+              <Pressable
+                onPress={onDismissTodayDreamPrompt}
+                className="rounded-full border border-border-default bg-bg-elevated px-5 py-2.5 active:opacity-90"
+              >
+                <Text className="text-text-secondary text-sm font-semibold">
+                  {t.home.todayDreamPromptDismissCta}
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        ) : null}
+
         <View className="mt-8 flex-row items-center justify-between">
           <Text className="text-text-primary text-3xl font-semibold">
             {t.home.quickStatsTitle}
@@ -345,21 +409,32 @@ export function HomeScreen({ navigation }: Props) {
           </View>
         </View>
 
-        <Pressable
-          onPress={() => navigation.navigate("Journal")}
-          className="mt-4 self-center rounded-2xl border border-border-subtle bg-bg-surface px-8 py-3.5 active:opacity-90"
-          style={{
-            shadowColor: "#000",
-            shadowOpacity: 0.05,
-            shadowRadius: 14,
-            shadowOffset: { width: 0, height: 7 },
-            elevation: 2,
-          }}
-        >
-          <Text className="text-text-primary text-lg font-semibold">
-            {t.home.quickStatsSeeMoreCta} ›
-          </Text>
-        </Pressable>
+        <View className="mt-4 flex-row items-center justify-center gap-3">
+          <Pressable
+            onPress={() => navigation.navigate("DreamInput")}
+            className="rounded-2xl bg-brand-primary px-6 py-3.5 active:opacity-90"
+          >
+            <Text className="text-text-inverse text-base font-semibold">
+              {t.home.quickStatsAddDreamCta}
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => navigation.navigate("Journal")}
+            className="rounded-2xl border border-border-subtle bg-bg-surface px-6 py-3.5 active:opacity-90"
+            style={{
+              shadowColor: "#000",
+              shadowOpacity: 0.05,
+              shadowRadius: 14,
+              shadowOffset: { width: 0, height: 7 },
+              elevation: 2,
+            }}
+          >
+            <Text className="text-text-primary text-base font-semibold">
+              {t.home.quickStatsSeeMoreCta} ›
+            </Text>
+          </Pressable>
+        </View>
 
         <View className="mt-8 flex-row items-center justify-between">
           <Text className="text-text-primary text-3xl font-semibold">

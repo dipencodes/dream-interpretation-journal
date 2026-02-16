@@ -95,7 +95,7 @@ export function SettingsScreen({ navigation }: Props) {
   );
 
   const onOpenPaywall = () => {
-    navigation.navigate("Paywall");
+    navigation.navigate("Paywall", { entry: "direct" });
   };
 
   const onOpenSubscriptionManagement = async () => {
