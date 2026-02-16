@@ -23,6 +23,12 @@ import type { InterpretMethodKey } from "../services/appPreferences";
 import { canRunAiInterpretation, consumeFreeUseIfNeeded } from "../services/paywallGate";
 import { MoodIcon } from "../components/MoodIcon";
 import { getMoodOptionById, getMoodOptionByTitle } from "../constants/moods";
+import {
+  normalizeTrackingErrorCode,
+  trackInterpretationFailed,
+  trackInterpretationStarted,
+  trackInterpretationSucceeded,
+} from "../services/tracking";
 
 type Props = NativeStackScreenProps<RootStackParamList, "DreamSummary">;
 
@@ -47,6 +53,51 @@ function getExcerpt(text: string, max = 220) {
   return `${text.slice(0, max).trim()}...`;
 }
 
+function normalizeInterpretationText(text: string) {
+  return text.replace(/\s+/g, " ").trim();
+}
+
+function splitIntoSentences(text: string) {
+  return text
+    .split(/(?<=[.!?])\s+/)
+    .map((sentence) => sentence.trim())
+    .filter(Boolean);
+}
+
+function buildQuickTake(text: string) {
+  const normalized = normalizeInterpretationText(text);
+  if (!normalized) return "";
+
+  const sentences = splitIntoSentences(normalized);
+  if (sentences.length === 0) return normalized;
+
+  const quickSentences: string[] = [];
+  let chars = 0;
+
+  for (const sentence of sentences) {
+    if (quickSentences.length >= 2) break;
+    if (chars + sentence.length > 240 && quickSentences.length > 0) break;
+    quickSentences.push(sentence);
+    chars += sentence.length;
+  }
+
+  return quickSentences.join(" ");
+}
+
+function buildReadableParagraphs(text: string) {
+  const normalized = normalizeInterpretationText(text);
+  if (!normalized) return [];
+
+  const sentences = splitIntoSentences(normalized);
+  if (sentences.length <= 1) return [normalized];
+
+  const paragraphs: string[] = [];
+  for (let index = 0; index < sentences.length; index += 2) {
+    paragraphs.push(sentences.slice(index, index + 2).join(" "));
+  }
+  return paragraphs;
+}
+
 function getNormalizedInterpretations(dream: DreamRecord) {
   const map: Partial<Record<InterpretMethodKey, MethodInterpretation>> = {
     ...(dream.interpretations ?? {}),
@@ -58,6 +109,7 @@ function getNormalizedInterpretations(dream: DreamRecord) {
     !map[dream.sourceKey as InterpretMethodKey]
   ) {
     map[dream.sourceKey as InterpretMethodKey] = {
+      summary: dream.interpretationSummary ?? null,
       interpretation: dream.interpretation,
       warning: dream.warning ?? null,
     };
@@ -84,6 +136,7 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
     () => ALL_METHODS.filter((method) => Boolean(interpretationsMap[method])),
     [interpretationsMap]
   );
+  const hasAnyInterpretation = interpretedMethodsList.length > 0;
 
   const effectiveMethod = useMemo(() => {
     if (currentMethod && interpretationsMap[currentMethod]) return currentMethod;
@@ -103,6 +156,28 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
     }
     return null;
   }, [effectiveMethod, interpretationsMap]);
+
+  const normalizedInterpretationText = useMemo(
+    () => normalizeInterpretationText(currentInterpretation?.interpretation ?? ""),
+    [currentInterpretation]
+  );
+
+  const interpretationQuickTake = useMemo(() => {
+    if (!currentInterpretation) return "";
+    const summary = currentInterpretation.summary?.trim();
+    if (summary) return summary;
+    return buildQuickTake(currentInterpretation.interpretation);
+  }, [currentInterpretation]);
+
+  const interpretationParagraphs = useMemo(
+    () => buildReadableParagraphs(currentInterpretation?.interpretation ?? ""),
+    [currentInterpretation]
+  );
+
+  const interpretationPreview = useMemo(
+    () => getExcerpt(normalizedInterpretationText),
+    [normalizedInterpretationText]
+  );
 
   const interpretedMethods = useMemo(() => {
     const methods = new Set<InterpretMethodKey>();
@@ -171,6 +246,7 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
     options?: { markRegenerated?: boolean }
   ) => {
     if (isInterpretingMethod) return;
+    let didStartInterpretation = false;
     try {
       const gate = await canRunAiInterpretation();
       if (!gate.allowed) {
@@ -180,6 +256,11 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
 
       setIsInterpretingMethod(method);
       await ensureAnonymousAuth();
+      await trackInterpretationStarted({
+        method,
+        source_screen: "dream_summary",
+      });
+      didStartInterpretation = true;
 
       const functionsInstance = getFunctions(getApp());
       const callable = httpsCallable(functionsInstance, "interpretDream");
@@ -188,16 +269,22 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
         dreamDate: dream.dreamDate,
         sourceKey: method,
       });
-      const data = result.data as { interpretation: string; warning: string | null };
+      const data = result.data as {
+        summary?: string | null;
+        interpretation: string;
+        warning: string | null;
+      };
 
       const updatedDream: DreamRecord = {
         ...dream,
         sourceKey: method,
+        interpretationSummary: data.summary ?? null,
         interpretation: data.interpretation,
         warning: data.warning ?? null,
         interpretations: {
           ...interpretationsMap,
           [method]: {
+            summary: data.summary ?? null,
             interpretation: data.interpretation,
             warning: data.warning ?? null,
           },
@@ -205,6 +292,10 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
       };
 
       await upsertDream(updatedDream);
+      await trackInterpretationSucceeded({
+        method,
+        source_screen: "dream_summary",
+      });
       await consumeFreeUseIfNeeded(gate.uid);
       setDream(updatedDream);
       setCurrentMethod(method);
@@ -216,8 +307,22 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
           return next;
         });
       }
-    } catch (error: any) {
-      Alert.alert("Error", error?.message ?? "Could not interpret with this method.");
+    } catch (error: unknown) {
+      if (didStartInterpretation) {
+        await trackInterpretationFailed({
+          method,
+          source_screen: "dream_summary",
+          error_code: normalizeTrackingErrorCode(error),
+        });
+      }
+      const errorMessage =
+        typeof error === "object" &&
+        error !== null &&
+        "message" in error &&
+        typeof (error as { message?: unknown }).message === "string"
+          ? (error as { message: string }).message
+          : "Could not interpret with this method.";
+      Alert.alert("Error", errorMessage);
     } finally {
       setIsInterpretingMethod(null);
     }
@@ -417,47 +522,85 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
             </ScrollView>
           ) : null}
 
-          <View className="mt-3 rounded-2xl border border-border-subtle bg-bg-elevated px-4 py-3">
-            <Text className="text-text-secondary text-[15px] leading-6">
-              {currentInterpretation
-                ? expandedInterpretation
-                  ? currentInterpretation.interpretation
-                  : getExcerpt(currentInterpretation.interpretation)
-                : t.dreamSummary.noInterpretation}
-            </Text>
-            {currentInterpretation ? (
-              <View className="mt-3 flex-row items-center">
-                {currentInterpretation.interpretation.length > 220 ? (
-                  <Pressable onPress={() => setExpandedInterpretation((prev) => !prev)}>
-                    <Text className="text-brand-copper text-sm font-semibold">
-                      {expandedInterpretation ? "See less" : "See more"}
-                    </Text>
-                  </Pressable>
-                ) : null}
-
-                {effectiveMethod && !regeneratedMethods.has(effectiveMethod) ? (
-                  <Pressable
-                    onPress={() =>
-                      onInterpretWithMethod(effectiveMethod, { markRegenerated: true })
-                    }
-                    disabled={Boolean(isInterpretingMethod)}
-                    className="ml-auto"
-                  >
-                    <Text className="text-brand-copper text-sm font-semibold">
-                      {isInterpretingMethod === effectiveMethod ? "Regenerating..." : "Regenerate"}
-                    </Text>
-                  </Pressable>
-                ) : null}
+          {currentInterpretation ? (
+            <>
+              <View className="mt-3 rounded-2xl border border-brand-primary/30 bg-brand-primary/10 px-4 py-3">
+                <Text className="text-text-primary text-[11px] font-semibold uppercase tracking-[0.8px]">
+                  {t.dreamSummary.quickTakeTitle}
+                </Text>
+                <Text className="text-text-primary mt-1 text-[15px] leading-6 font-medium">
+                  {interpretationQuickTake}
+                </Text>
               </View>
-            ) : null}
-          </View>
+
+              <View className="mt-3 rounded-2xl border border-border-subtle bg-bg-elevated px-4 py-3">
+                <Text className="text-text-primary text-[11px] font-semibold uppercase tracking-[0.8px]">
+                  {t.dreamSummary.detailsTitle}
+                </Text>
+
+                <View className="mt-2">
+                  {expandedInterpretation
+                    ? interpretationParagraphs.map((paragraph, index) => (
+                        <Text
+                          key={`${index}-${paragraph.slice(0, 18)}`}
+                          className={[
+                            "text-text-secondary text-[15px] leading-6",
+                            index === 0 ? "" : "mt-2",
+                          ].join(" ")}
+                        >
+                          {paragraph}
+                        </Text>
+                      ))
+                    : (
+                        <Text className="text-text-secondary text-[15px] leading-6">
+                          {interpretationPreview}
+                        </Text>
+                      )}
+                </View>
+
+                <View className="mt-3 flex-row items-center">
+                  {normalizedInterpretationText.length > 220 ? (
+                    <Pressable onPress={() => setExpandedInterpretation((prev) => !prev)}>
+                      <Text className="text-brand-copper text-sm font-semibold">
+                        {expandedInterpretation
+                          ? t.dreamSummary.readLessCta
+                          : t.dreamSummary.readMoreCta}
+                      </Text>
+                    </Pressable>
+                  ) : null}
+
+                  {effectiveMethod && !regeneratedMethods.has(effectiveMethod) ? (
+                    <Pressable
+                      onPress={() =>
+                        onInterpretWithMethod(effectiveMethod, { markRegenerated: true })
+                      }
+                      disabled={Boolean(isInterpretingMethod)}
+                      className="ml-auto"
+                    >
+                      <Text className="text-brand-copper text-sm font-semibold">
+                        {isInterpretingMethod === effectiveMethod ? "Regenerating..." : "Regenerate"}
+                      </Text>
+                    </Pressable>
+                  ) : null}
+                </View>
+              </View>
+            </>
+          ) : (
+            <View className="mt-3 rounded-2xl border border-border-subtle bg-bg-elevated px-4 py-3">
+              <Text className="text-text-secondary text-[15px] leading-6">
+                {t.dreamSummary.noInterpretation}
+              </Text>
+            </View>
+          )}
 
           {remainingMethods.length > 0 ? (
             <View className="mt-4">
-              <Text className="text-text-primary text-sm font-semibold">
-                {t.dreamSummary.interpretOthers}
-              </Text>
-              <View className="mt-3 flex-row flex-wrap">
+              {hasAnyInterpretation ? (
+                <Text className="text-text-primary text-sm font-semibold">
+                  {t.dreamSummary.interpretOthers}
+                </Text>
+              ) : null}
+              <View className={[hasAnyInterpretation ? "mt-3" : "", "flex-row flex-wrap"].join(" ")}>
                 {remainingMethods.map((method) => (
                   <Pressable
                     key={method}

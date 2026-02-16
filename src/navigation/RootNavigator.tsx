@@ -14,13 +14,17 @@ import { DreamInputScreen } from "../screens/DreamInputScreen";
 import { DreamMoodScreen } from "../screens/DreamMoodScreen";
 import { DreamInterpretMethodScreen } from "../screens/DreamInterpretMethodScreen";
 import { DreamSummaryScreen } from "../screens/DreamSummaryScreen";
-import { getHasCompletedOnboarding } from "../services/appPreferences";
+import {
+  getHasCompletedOnboarding,
+  setHasCompletedOnboarding,
+} from "../services/appPreferences";
+import { getDreams } from "../services/dreamStorage";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function RootNavigator() {
   const [isBootstrapping, setIsBootstrapping] = useState(true);
-  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
+  const [hasCompletedOnboarding, setHasCompletedOnboardingState] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -28,8 +32,18 @@ export function RootNavigator() {
     (async () => {
       try {
         const completed = await getHasCompletedOnboarding();
+        let resolvedCompleted = completed;
+
+        if (!completed) {
+          const dreams = await getDreams();
+          if (dreams.length > 0) {
+            resolvedCompleted = true;
+            await setHasCompletedOnboarding(true);
+          }
+        }
+
         if (mounted) {
-          setHasCompletedOnboarding(completed);
+          setHasCompletedOnboardingState(resolvedCompleted);
         }
       } finally {
         if (mounted) {

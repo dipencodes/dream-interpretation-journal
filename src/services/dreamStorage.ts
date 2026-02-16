@@ -1,9 +1,15 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { InterpretMethodKey } from "./appPreferences";
+import { setHasCompletedOnboarding } from "./appPreferences";
+import {
+  trackDreamSaved,
+  trackOnboardingCompletedFirstDreamSaved,
+} from "./tracking";
 
 const STORAGE_KEY = "dreams";
 
 export type MethodInterpretation = {
+  summary?: string | null;
   interpretation: string;
   warning: string | null;
 };
@@ -13,6 +19,7 @@ export type DreamRecord = {
   createdAt: number;
   dreamDate: string;
   dreamText: string;
+  interpretationSummary?: string | null;
   interpretation: string | null;
   warning: string | null;
   sourceKey: string;
@@ -24,10 +31,21 @@ export type DreamRecord = {
 export async function saveDream(record: DreamRecord) {
   const existing = await AsyncStorage.getItem(STORAGE_KEY);
   const dreams: DreamRecord[] = existing ? JSON.parse(existing) : [];
+  const isFirstDream = dreams.length === 0;
 
   dreams.unshift(record); // newest first
 
   await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(dreams));
+  await setHasCompletedOnboarding(true);
+  await trackDreamSaved({
+    has_interpretation: Boolean(record.interpretation),
+    source_key: record.sourceKey || "unknown",
+    has_mood: Boolean(record.moodIcon || record.moodLabel),
+  });
+
+  if (isFirstDream) {
+    await trackOnboardingCompletedFirstDreamSaved();
+  }
 }
 
 export async function getDreams(): Promise<DreamRecord[]> {

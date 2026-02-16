@@ -1,8 +1,10 @@
 const functions = require("firebase-functions");
 const OpenAI = require("openai");
+const fetch = require("node-fetch");
 
 const openai = new OpenAI({
   apiKey: functions.config().openai.key,
+  fetch,
 });
 
 // Allowed source keys
@@ -109,11 +111,16 @@ OUTPUT:
 Return ONLY valid JSON (no markdown, no extra text):
 
 {
+  "summary": string,
   "interpretation": string,
   "warning": string | null
 }
 
-Tone: calm, reflective, supportive. Avoid absolutes.
+WRITING RULES:
+- summary: 1-2 short sentences, max 35 words, plain language.
+- interpretation: 2 short paragraphs, total 90-140 words.
+- Be concrete, warm, and readable. Avoid repetition and long academic phrasing.
+- Tone: calm, reflective, supportive. Avoid absolutes.
 `
         },
         {
@@ -155,7 +162,12 @@ Interpret this dream.
       throw new Error("Missing interpretation field.");
     }
 
+    const summary = typeof parsed.summary === "string" && parsed.summary.trim() ?
+      parsed.summary.trim() :
+      null;
+
     return {
+      summary,
       interpretation: parsed.interpretation,
       warning: parsed.warning || null,
     };

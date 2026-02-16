@@ -1209,6 +1209,24 @@ PODS:
   - Firebase/Functions (12.8.0):
     - Firebase/CoreOnly
     - FirebaseFunctions (~> 12.8.0)
+  - FirebaseAnalytics/Core (12.8.0):
+    - FirebaseCore (~> 12.8.0)
+    - FirebaseInstallations (~> 12.8.0)
+    - GoogleAppMeasurement/Core (= 12.8.0)
+    - GoogleUtilities/AppDelegateSwizzler (~> 8.1)
+    - GoogleUtilities/MethodSwizzler (~> 8.1)
+    - GoogleUtilities/Network (~> 8.1)
+    - "GoogleUtilities/NSData+zlib (~> 8.1)"
+    - nanopb (~> 3.30910.0)
+  - FirebaseAnalytics/IdentitySupport (12.8.0):
+    - FirebaseCore (~> 12.8.0)
+    - FirebaseInstallations (~> 12.8.0)
+    - GoogleAppMeasurement/IdentitySupport (= 12.8.0)
+    - GoogleUtilities/AppDelegateSwizzler (~> 8.1)
+    - GoogleUtilities/MethodSwizzler (~> 8.1)
+    - GoogleUtilities/Network (~> 8.1)
+    - "GoogleUtilities/NSData+zlib (~> 8.1)"
+    - nanopb (~> 3.30910.0)
   - FirebaseAppCheckInterop (12.8.0)
   - FirebaseAuth (12.8.0):
     - FirebaseAppCheckInterop (~> 12.8.0)
@@ -1256,10 +1274,28 @@ PODS:
     - FirebaseMessagingInterop (~> 12.8.0)
     - FirebaseSharedSwift (~> 12.8.0)
     - GTMSessionFetcher/Core (< 6.0, >= 3.4)
+  - FirebaseInstallations (12.8.0):
+    - FirebaseCore (~> 12.8.0)
+    - GoogleUtilities/Environment (~> 8.1)
+    - GoogleUtilities/UserDefaults (~> 8.1)
+    - PromisesObjC (~> 2.4)
   - FirebaseMessagingInterop (12.8.0)
   - FirebaseSharedSwift (12.8.0)
   - fmt (11.0.2)
   - glog (0.3.5)
+  - GoogleAppMeasurement/Core (12.8.0):
+    - GoogleUtilities/AppDelegateSwizzler (~> 8.1)
+    - GoogleUtilities/MethodSwizzler (~> 8.1)
+    - GoogleUtilities/Network (~> 8.1)
+    - "GoogleUtilities/NSData+zlib (~> 8.1)"
+    - nanopb (~> 3.30910.0)
+  - GoogleAppMeasurement/IdentitySupport (12.8.0):
+    - GoogleAppMeasurement/Core (= 12.8.0)
+    - GoogleUtilities/AppDelegateSwizzler (~> 8.1)
+    - GoogleUtilities/MethodSwizzler (~> 8.1)
+    - GoogleUtilities/Network (~> 8.1)
+    - "GoogleUtilities/NSData+zlib (~> 8.1)"
+    - nanopb (~> 3.30910.0)
   - GoogleUtilities (8.1.0):
     - GoogleUtilities/AppDelegateSwizzler (= 8.1.0)
     - GoogleUtilities/Environment (= 8.1.0)
@@ -1402,8 +1438,12 @@ PODS:
     - nanopb/encode (= 3.30910.0)
   - nanopb/decode (3.30910.0)
   - nanopb/encode (3.30910.0)
+  - PromisesObjC (2.4.0)
   - PurchasesHybridCommon (17.37.0):
     - RevenueCat (= 5.58.0)
+  - PurchasesHybridCommonUI (17.37.0):
+    - PurchasesHybridCommon (= 17.37.0)
+    - RevenueCatUI (= 5.58.0)
   - RCT-Folly (2024.11.18.00):
     - boost
     - DoubleConversion
@@ -3962,6 +4002,8 @@ PODS:
     - SocketRocket
   - RecaptchaInterop (101.0.0)
   - RevenueCat (5.58.0)
+  - RevenueCatUI (5.58.0):
+    - RevenueCat (= 5.58.0)
   - RNCAsyncStorage (2.2.0):
     - boost
     - DoubleConversion
@@ -4016,6 +4058,37 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
+    - SocketRocket
+    - Yoga
+  - RNFBAnalytics (23.8.6):
+    - boost
+    - DoubleConversion
+    - fast_float
+    - FirebaseAnalytics/Core (= 12.8.0)
+    - FirebaseAnalytics/IdentitySupport (= 12.8.0)
+    - fmt
+    - glog
+    - hermes-engine
+    - RCT-Folly
+    - RCT-Folly/Fabric
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - RNFBApp
     - SocketRocket
     - Yoga
   - RNFBApp (23.8.6):
@@ -4141,6 +4214,9 @@ PODS:
     - React-Core
     - RNNotifee/NotifeeCore (= 9.1.8)
   - RNNotifee/NotifeeCore (9.1.8):
+    - React-Core
+  - RNPaywalls (9.9.0):
+    - PurchasesHybridCommonUI (= 17.37.0)
     - React-Core
   - RNPurchases (9.9.0):
     - PurchasesHybridCommon (= 17.37.0)
@@ -4533,11 +4609,13 @@ DEPENDENCIES:
   - RecaptchaInterop
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
+  - "RNFBAnalytics (from `../node_modules/@react-native-firebase/analytics`)"
   - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
   - "RNFBAuth (from `../node_modules/@react-native-firebase/auth`)"
   - "RNFBFirestore (from `../node_modules/@react-native-firebase/firestore`)"
   - "RNFBFunctions (from `../node_modules/@react-native-firebase/functions`)"
   - "RNNotifee (from `../node_modules/@notifee/react-native`)"
+  - RNPaywalls (from `../node_modules/react-native-purchases-ui`)
   - RNPurchases (from `../node_modules/react-native-purchases`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
@@ -4551,6 +4629,7 @@ SPEC REPOS:
     - abseil
     - BoringSSL-GRPC
     - Firebase
+    - FirebaseAnalytics
     - FirebaseAppCheckInterop
     - FirebaseAuth
     - FirebaseAuthInterop
@@ -4560,17 +4639,22 @@ SPEC REPOS:
     - FirebaseFirestore
     - FirebaseFirestoreInternal
     - FirebaseFunctions
+    - FirebaseInstallations
     - FirebaseMessagingInterop
     - FirebaseSharedSwift
+    - GoogleAppMeasurement
     - GoogleUtilities
     - "gRPC-C++"
     - gRPC-Core
     - GTMSessionFetcher
     - leveldb-library
     - nanopb
+    - PromisesObjC
     - PurchasesHybridCommon
+    - PurchasesHybridCommonUI
     - RecaptchaInterop
     - RevenueCat
+    - RevenueCatUI
     - SocketRocket
 
 EXTERNAL SOURCES:
@@ -4735,6 +4819,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-async-storage/async-storage"
   RNDateTimePicker:
     :path: "../node_modules/@react-native-community/datetimepicker"
+  RNFBAnalytics:
+    :path: "../node_modules/@react-native-firebase/analytics"
   RNFBApp:
     :path: "../node_modules/@react-native-firebase/app"
   RNFBAuth:
@@ -4745,6 +4831,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-firebase/functions"
   RNNotifee:
     :path: "../node_modules/@notifee/react-native"
+  RNPaywalls:
+    :path: "../node_modules/react-native-purchases-ui"
   RNPurchases:
     :path: "../node_modules/react-native-purchases"
   RNReanimated:
@@ -4766,6 +4854,7 @@ SPEC CHECKSUMS:
   fast_float: b32c788ed9c6a8c584d114d0047beda9664e7cc6
   FBLazyVector: 309703e71d3f2f1ed7dc7889d58309c9d77a95a4
   Firebase: 9a58fdbc9d8655ed7b79a19cf9690bb007d3d46d
+  FirebaseAnalytics: f20bbad8cb7f65d8a5eaefeb424ae8800a31bdfc
   FirebaseAppCheckInterop: ba3dc604a89815379e61ec2365101608d365cf7d
   FirebaseAuth: 4c289b1a43f5955283244a55cf6bd616de344be5
   FirebaseAuthInterop: 95363fe96493cb4f106656666a0768b420cba090
@@ -4775,10 +4864,12 @@ SPEC CHECKSUMS:
   FirebaseFirestore: 67f23000ca238ccbab79127ed59636a9a2689e74
   FirebaseFirestoreInternal: a0e7382af3d208898dcd1d4d52d8a7870632e881
   FirebaseFunctions: 65f773056cb7f654626e5fa4894b1d6539cb5feb
+  FirebaseInstallations: 6a14ab3d694ebd9f839c48d330da5547e9ca9dc0
   FirebaseMessagingInterop: e27b8f42f682efdb101318a53c3f5316ce3402e6
   FirebaseSharedSwift: f57ed48f4542b2d7eb4738f4f23ba443f78b3780
   fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
   glog: 5683914934d5b6e4240e497e0f4a3b42d1854183
+  GoogleAppMeasurement: 72c9a682fec6290327ea5e3c4b829b247fcb2c17
   GoogleUtilities: 00c88b9a86066ef77f0da2fab05f65d7768ed8e1
   "gRPC-C++": cc207623316fb041a7a3e774c252cf68a058b9e8
   gRPC-Core: 860978b7db482de8b4f5e10677216309b5ff6330
@@ -4786,7 +4877,9 @@ SPEC CHECKSUMS:
   hermes-engine: 34a5ffb07931b16c251e6691d76b074b85d8e2fe
   leveldb-library: cc8b8f8e013647a295ad3f8cd2ddf49a6f19be19
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
+  PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   PurchasesHybridCommon: 5e012ecbd932092af743a8cec6bf55b605f2d89d
+  PurchasesHybridCommonUI: a1130f31aa43493b00d631d256dec6e28d91e904
   RCT-Folly: 59ec0ac1f2f39672a0c6e6cecdd39383b764646f
   RCTDeprecation: a41bbdd9af30bf2e5715796b313e44ec43eefff1
   RCTRequired: 7be34aabb0b77c3cefe644528df0fa0afad4e4d0
@@ -4860,13 +4953,16 @@ SPEC CHECKSUMS:
   ReactCommon: 136c3863bf14312a58944f674691f2c5874deafb
   RecaptchaInterop: 11e0b637842dfb48308d242afc3f448062325aba
   RevenueCat: 88bb4229115b2badcce0e5a97f3dd8cc952b38c8
+  RevenueCatUI: 127bebf87cab78e245b36eaca04e371d4f120ca3
   RNCAsyncStorage: 8857fb173af29664cb90897903902dc8533e36cc
   RNDateTimePicker: 239dc0c70f94e440d815763d3bace9c4ea73ae27
+  RNFBAnalytics: eaecfea663de03ab73ac6b39d654ebe9ad5999e4
   RNFBApp: 58f13fa19e95d50e210c54c1dff0b6e1ea4235a8
   RNFBAuth: 540afc30b1d2bbf152fa2787de9de5e8df537fa9
   RNFBFirestore: e92bbaf2c77c9c61aaaccc3f32ef2bab2a2f714b
   RNFBFunctions: 67642a878755f49a6372b12c9974783722569537
   RNNotifee: 4a6ee5c7deaf00e005050052d73ee6315dff7ec9
+  RNPaywalls: 8d028eacf14bb4a17ef050a70538a063aa4fbdfd
   RNPurchases: 1b024f4867ab4c25faec1463bcad6ccdf3256250
   RNReanimated: 0a23a0a9721f450580f0fdf04b9ae928cd22915a
   RNScreens: 32d204189c8c164da3aef640b6d1d8721c25a86f

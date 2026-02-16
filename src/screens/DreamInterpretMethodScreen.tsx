@@ -20,6 +20,12 @@ import {
   type InterpretMethodKey,
 } from "../services/appPreferences";
 import { canRunAiInterpretation, consumeFreeUseIfNeeded } from "../services/paywallGate";
+import {
+  normalizeTrackingErrorCode,
+  trackInterpretationFailed,
+  trackInterpretationStarted,
+  trackInterpretationSucceeded,
+} from "../services/tracking";
 
 type Props = NativeStackScreenProps<RootStackParamList, "DreamInterpretMethod">;
 
@@ -96,6 +102,7 @@ export function DreamInterpretMethodScreen({ route, navigation }: Props) {
 
   const onInterpret = async () => {
     if (!selectedMethod || isInterpreting) return;
+    let didStartInterpretation = false;
     try {
       const gate = await canRunAiInterpretation();
       if (!gate.allowed) {
@@ -110,6 +117,12 @@ export function DreamInterpretMethodScreen({ route, navigation }: Props) {
         await setDefaultInterpretMethod(selectedMethod);
       }
 
+      await trackInterpretationStarted({
+        method: selectedMethod,
+        source_screen: "dream_interpret_method",
+      });
+      didStartInterpretation = true;
+
       const functionsInstance = getFunctions(getApp());
       const callable = httpsCallable(functionsInstance, "interpretDream");
       const result = await callable({
@@ -118,19 +131,25 @@ export function DreamInterpretMethodScreen({ route, navigation }: Props) {
         sourceKey: selectedMethod,
       });
 
-      const data = result.data as { interpretation: string; warning: string | null };
+      const data = result.data as {
+        summary?: string | null;
+        interpretation: string;
+        warning: string | null;
+      };
       const record: DreamRecord = {
         id: Date.now().toString(),
         createdAt: Date.now(),
         dreamDate,
         dreamText,
         sourceKey: selectedMethod,
+        interpretationSummary: data.summary ?? null,
         interpretation: data.interpretation,
         warning: data.warning ?? null,
         moodLabel,
         moodIcon: moodIcon || selectedMoodId,
         interpretations: {
           [selectedMethod]: {
+            summary: data.summary ?? null,
             interpretation: data.interpretation,
             warning: data.warning ?? null,
           },
@@ -138,10 +157,28 @@ export function DreamInterpretMethodScreen({ route, navigation }: Props) {
       };
 
       await saveDream(record);
+      await trackInterpretationSucceeded({
+        method: selectedMethod,
+        source_screen: "dream_interpret_method",
+      });
       await consumeFreeUseIfNeeded(gate.uid);
       navigation.navigate("DreamSummary", { dream: record });
-    } catch (error: any) {
-      Alert.alert("Error", error?.message ?? t.dreamInterpretMethod.error);
+    } catch (error: unknown) {
+      if (didStartInterpretation && selectedMethod) {
+        await trackInterpretationFailed({
+          method: selectedMethod,
+          source_screen: "dream_interpret_method",
+          error_code: normalizeTrackingErrorCode(error),
+        });
+      }
+      const errorMessage =
+        typeof error === "object" &&
+        error !== null &&
+        "message" in error &&
+        typeof (error as { message?: unknown }).message === "string"
+          ? (error as { message: string }).message
+          : t.dreamInterpretMethod.error;
+      Alert.alert("Error", errorMessage);
     } finally {
       setIsInterpreting(false);
     }

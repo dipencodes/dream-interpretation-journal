@@ -1,10 +1,12 @@
 import notifee, {
   AndroidImportance,
   AuthorizationStatus,
+  EventType,
   RepeatFrequency,
   TriggerType,
   type TimestampTrigger,
 } from "@notifee/react-native";
+import { trackAppOpenedFromNotification } from "./tracking";
 
 const CHANNEL_ID = "dream_morning_reminders";
 const MORNING_NOTIFICATION_ID = "dream_morning_notification";
@@ -72,4 +74,82 @@ export async function scheduleMorningReminder(
     },
     trigger
   );
+}
+
+type NotificationOpenSource =
+  | "cold_start"
+  | "foreground_press"
+  | "foreground_action_press";
+
+function buildNotificationOpenDedupKey(
+  notificationId: string | null | undefined,
+  pressActionId: string | null | undefined,
+  source: NotificationOpenSource
+) {
+  return `${source}:${notificationId ?? "none"}:${pressActionId ?? "none"}`;
+}
+
+export function setupNotificationOpenTracking(): () => void {
+  const handledOpenKeys = new Set<string>();
+
+  const trackOpenOnce = async ({
+    notificationId,
+    pressActionId,
+    source,
+  }: {
+    notificationId?: string | null;
+    pressActionId?: string | null;
+    source: NotificationOpenSource;
+  }) => {
+    const dedupeKey = buildNotificationOpenDedupKey(
+      notificationId,
+      pressActionId,
+      source
+    );
+    if (handledOpenKeys.has(dedupeKey)) {
+      return;
+    }
+
+    handledOpenKeys.add(dedupeKey);
+    await trackAppOpenedFromNotification({
+      notification_id: notificationId ?? null,
+      press_action_id: pressActionId ?? null,
+      open_source: source,
+    });
+  };
+
+  notifee
+    .getInitialNotification()
+    .then((initialNotification) => {
+      if (!initialNotification) return;
+      return trackOpenOnce({
+        notificationId: initialNotification.notification?.id ?? null,
+        pressActionId: initialNotification.pressAction?.id ?? null,
+        source: "cold_start",
+      });
+    })
+    .catch(() => {
+      // Keep notification tracking non-blocking.
+    });
+
+  const unsubscribe = notifee.onForegroundEvent((event) => {
+    if (event.type !== EventType.PRESS && event.type !== EventType.ACTION_PRESS) {
+      return;
+    }
+
+    trackOpenOnce({
+      notificationId: event.detail.notification?.id ?? null,
+      pressActionId: event.detail.pressAction?.id ?? null,
+      source:
+        event.type === EventType.ACTION_PRESS
+          ? "foreground_action_press"
+          : "foreground_press",
+    }).catch(() => {
+      // Keep notification tracking non-blocking.
+    });
+  });
+
+  return () => {
+    unsubscribe();
+  };
 }

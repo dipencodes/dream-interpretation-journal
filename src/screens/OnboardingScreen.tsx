@@ -3,7 +3,6 @@ import { Alert, Pressable, Text, View } from "react-native";
 import { t } from "../i18n";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/types";
-import { setHasCompletedOnboarding } from "../services/appPreferences";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Onboarding">;
 
@@ -51,10 +50,9 @@ function Dots({ activeIndex = 0, total = 2 }: { activeIndex?: number; total?: nu
 export function OnboardingScreen({ navigation }: Props) {
   const onStartPress = async () => {
     try {
-      await setHasCompletedOnboarding(true);
       navigation.reset({
         index: 0,
-        routes: [{ name: "Home" }],
+        routes: [{ name: "DreamInput" }],
       });
     } catch (error: any) {
       Alert.alert("Error", error?.message ?? "Could not continue. Please try again.");

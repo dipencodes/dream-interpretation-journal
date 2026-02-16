@@ -19,6 +19,12 @@ import {
   type InterpretMethodKey,
 } from "../services/appPreferences";
 import { canRunAiInterpretation, consumeFreeUseIfNeeded } from "../services/paywallGate";
+import {
+  normalizeTrackingErrorCode,
+  trackInterpretationFailed,
+  trackInterpretationStarted,
+  trackInterpretationSucceeded,
+} from "../services/tracking";
 import { MoodIcon } from "../components/MoodIcon";
 import { MOOD_OPTIONS, type MoodId } from "../constants/moods";
 
@@ -59,6 +65,7 @@ export function DreamMoodScreen({ route, navigation }: Props) {
     createdAt: Date.now(),
     dreamDate,
     dreamText,
+    interpretationSummary: null,
     interpretation: null,
     warning: null,
     sourceKey: "manual",
@@ -67,33 +74,51 @@ export function DreamMoodScreen({ route, navigation }: Props) {
   });
 
   const runInterpretation = async (method: InterpretMethodKey, gateUid: string) => {
-    await ensureAnonymousAuth();
+    await trackInterpretationStarted({ method, source_screen: "dream_mood" });
 
-    const functionsInstance = getFunctions(getApp());
-    const callable = httpsCallable(functionsInstance, "interpretDream");
-    const result = await callable({
-      dreamText,
-      dreamDate,
-      sourceKey: method,
-    });
+    try {
+      await ensureAnonymousAuth();
 
-    const data = result.data as { interpretation: string; warning: string | null };
-    const record: DreamRecord = {
-      ...buildBaseRecord(),
-      sourceKey: method,
-      interpretation: data.interpretation,
-      warning: data.warning ?? null,
-      interpretations: {
-        [method]: {
-          interpretation: data.interpretation,
-          warning: data.warning ?? null,
+      const functionsInstance = getFunctions(getApp());
+      const callable = httpsCallable(functionsInstance, "interpretDream");
+      const result = await callable({
+        dreamText,
+        dreamDate,
+        sourceKey: method,
+      });
+
+      const data = result.data as {
+        summary?: string | null;
+        interpretation: string;
+        warning: string | null;
+      };
+      const record: DreamRecord = {
+        ...buildBaseRecord(),
+        sourceKey: method,
+        interpretationSummary: data.summary ?? null,
+        interpretation: data.interpretation,
+        warning: data.warning ?? null,
+        interpretations: {
+          [method]: {
+            summary: data.summary ?? null,
+            interpretation: data.interpretation,
+            warning: data.warning ?? null,
+          },
         },
-      },
-    };
+      };
 
-    await saveDream(record);
-    await consumeFreeUseIfNeeded(gateUid);
-    navigation.navigate("DreamSummary", { dream: record });
+      await saveDream(record);
+      await trackInterpretationSucceeded({ method, source_screen: "dream_mood" });
+      await consumeFreeUseIfNeeded(gateUid);
+      navigation.navigate("DreamSummary", { dream: record });
+    } catch (error: unknown) {
+      await trackInterpretationFailed({
+        method,
+        source_screen: "dream_mood",
+        error_code: normalizeTrackingErrorCode(error),
+      });
+      throw error;
+    }
   };
 
   const onSaveOnly = async () => {

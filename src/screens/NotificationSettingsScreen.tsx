@@ -25,6 +25,7 @@ import {
   ensureNotificationPermission,
   scheduleMorningReminder,
 } from "../services/notifications";
+import { trackNotificationOptInChanged } from "../services/tracking";
 import { t } from "../i18n";
 
 type Props = NativeStackScreenProps<RootStackParamList, "NotificationSettings">;
@@ -97,9 +98,19 @@ export function NotificationSettingsScreen({ navigation }: Props) {
       if (enabled) {
         await scheduleMorningReminder(next.morningHour, next.morningMinute);
         await persistPreferences(next);
+        await trackNotificationOptInChanged({
+          enabled: true,
+          hour: next.morningHour,
+          minute: next.morningMinute,
+        });
       } else {
         await cancelMorningReminder();
         await persistPreferences(next);
+        await trackNotificationOptInChanged({
+          enabled: false,
+          hour: next.morningHour,
+          minute: next.morningMinute,
+        });
       }
     } catch (error: any) {
       Alert.alert("Error", error?.message ?? t.notifications.saveError);
