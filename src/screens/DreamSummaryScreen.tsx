@@ -207,7 +207,12 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
     return getMoodOptionByTitle(dream.moodLabel);
   }, [dream.moodIcon, dream.moodLabel]);
 
-  const onGoHome = () => {
+  const onBackPress = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+      return;
+    }
+
     navigation.reset({
       index: 0,
       routes: [{ name: "Home" }],
@@ -419,10 +424,12 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
       >
         <View className="mb-4 flex-row items-center justify-between">
           <Pressable
-            onPress={onGoHome}
+            onPress={onBackPress}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
             className="h-11 w-11 items-center justify-center rounded-full border border-border-subtle bg-bg-surface active:opacity-90"
           >
-            <Text className="text-text-primary text-xl">⌂</Text>
+            <Text className="text-text-primary text-2xl">‹</Text>
           </Pressable>
 
           {context === "playground" ? (

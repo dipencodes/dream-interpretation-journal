@@ -525,6 +525,7 @@ export function HomeScreen({ navigation }: Props) {
         activeTab="home"
         onHomePress={() => {}}
         onJournalPress={() => navigation.navigate("Journal")}
+        onPlaygroundPress={() => navigation.navigate("Playground")}
         onSettingsPress={() => navigation.navigate("Settings")}
       />
     </View>

@@ -72,7 +72,7 @@ export const en = {
     recentSectionTitle: "Recent dream",
     recentSectionSubtext: "Your latest saved dream.",
     viewAllDreamsCta: "View all dreams",
-    playgroundSectionTitle: "Dream Playground",
+    playgroundSectionTitle: " Playground",
     playgroundSectionSubtext:
       "Find meaning of dreams without saving to your journal.",
     openPlaygroundCta: "Open playground",
@@ -103,7 +103,7 @@ export const en = {
   },
 
   playground: {
-    title: "Dream Playground",
+    title: "Playground",
     searchPlaceholder: "Search in playground dreams",
     addDreamCta: "Dream",
     empty: "No playground dreams yet. Add one to start exploring.",

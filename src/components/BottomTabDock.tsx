@@ -1,12 +1,13 @@
 import React from "react";
 import { Pressable, Text, View } from "react-native";
 
-type TabKey = "home" | "journal" | "settings";
+type TabKey = "home" | "journal" | "playground" | "settings";
 
 type Props = {
   activeTab: TabKey;
   onHomePress: () => void;
   onJournalPress: () => void;
+  onPlaygroundPress: () => void;
   onSettingsPress: () => void;
 };
 
@@ -37,6 +38,7 @@ export function BottomTabDock({
   activeTab,
   onHomePress,
   onJournalPress,
+  onPlaygroundPress,
   onSettingsPress,
 }: Props) {
   return (
@@ -62,6 +64,12 @@ export function BottomTabDock({
           label="Journal"
           active={activeTab === "journal"}
           onPress={onJournalPress}
+        />
+        <DockItem
+          icon="☾"
+          label="Playground"
+          active={activeTab === "playground"}
+          onPress={onPlaygroundPress}
         />
         <DockItem
           icon="⚙"

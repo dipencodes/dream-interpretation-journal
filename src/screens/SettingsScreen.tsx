@@ -217,6 +217,7 @@ export function SettingsScreen({ navigation }: Props) {
         activeTab="settings"
         onHomePress={() => navigation.navigate("Home")}
         onJournalPress={() => navigation.navigate("Journal")}
+        onPlaygroundPress={() => navigation.navigate("Playground")}
         onSettingsPress={() => {}}
       />
     </View>

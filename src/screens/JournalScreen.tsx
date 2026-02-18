@@ -588,6 +588,7 @@ export function JournalScreen({ navigation }: Props) {
         activeTab="journal"
         onHomePress={() => navigation.navigate("Home")}
         onJournalPress={() => {}}
+        onPlaygroundPress={() => navigation.navigate("Playground")}
         onSettingsPress={() => navigation.navigate("Settings")}
       />
     </View>
