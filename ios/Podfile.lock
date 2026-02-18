@@ -4032,6 +4032,34 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
+  - RNCClipboard (1.16.3):
+    - boost
+    - DoubleConversion
+    - fast_float
+    - fmt
+    - glog
+    - hermes-engine
+    - RCT-Folly
+    - RCT-Folly/Fabric
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - SocketRocket
+    - Yoga
   - RNDateTimePicker (8.6.0):
     - boost
     - DoubleConversion
@@ -4608,6 +4636,7 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - RecaptchaInterop
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
+  - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
   - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
   - "RNFBAnalytics (from `../node_modules/@react-native-firebase/analytics`)"
   - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
@@ -4817,6 +4846,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   RNCAsyncStorage:
     :path: "../node_modules/@react-native-async-storage/async-storage"
+  RNCClipboard:
+    :path: "../node_modules/@react-native-clipboard/clipboard"
   RNDateTimePicker:
     :path: "../node_modules/@react-native-community/datetimepicker"
   RNFBAnalytics:
@@ -4955,6 +4986,7 @@ SPEC CHECKSUMS:
   RevenueCat: 88bb4229115b2badcce0e5a97f3dd8cc952b38c8
   RevenueCatUI: 127bebf87cab78e245b36eaca04e371d4f120ca3
   RNCAsyncStorage: 8857fb173af29664cb90897903902dc8533e36cc
+  RNCClipboard: 4eea71d801c880175c12f6ab14332ca86fed935f
   RNDateTimePicker: 239dc0c70f94e440d815763d3bace9c4ea73ae27
   RNFBAnalytics: eaecfea663de03ab73ac6b39d654ebe9ad5999e4
   RNFBApp: 58f13fa19e95d50e210c54c1dff0b6e1ea4235a8

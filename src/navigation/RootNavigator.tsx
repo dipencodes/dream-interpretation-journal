@@ -6,6 +6,7 @@ import type { RootStackParamList } from "./types";
 import { OnboardingScreen } from "../screens/OnboardingScreen";
 import { HomeScreen } from "../screens/HomeScreen";
 import { JournalScreen } from "../screens/JournalScreen";
+import { PlaygroundScreen } from "../screens/PlaygroundScreen";
 import { SettingsScreen } from "../screens/SettingsScreen";
 import { InterpretationMethodSettingsScreen } from "../screens/InterpretationMethodSettingsScreen";
 import { NotificationSettingsScreen } from "../screens/NotificationSettingsScreen";
@@ -75,6 +76,7 @@ export function RootNavigator() {
       <Stack.Screen name="Onboarding" component={OnboardingScreen} />
       <Stack.Screen name="Home" component={HomeScreen} />
       <Stack.Screen name="Journal" component={JournalScreen} />
+      <Stack.Screen name="Playground" component={PlaygroundScreen} />
       <Stack.Screen name="Settings" component={SettingsScreen} />
       <Stack.Screen
         name="InterpretationMethodSettings"

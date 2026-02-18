@@ -476,6 +476,36 @@ export function HomeScreen({ navigation }: Props) {
             />
           ))}
 
+        <View
+          className="mt-6 rounded-3xl border border-border-subtle bg-bg-surface p-5"
+          style={{
+            shadowColor: "#000",
+            shadowOpacity: 0.06,
+            shadowRadius: 18,
+            shadowOffset: { width: 0, height: 10 },
+            elevation: 3,
+          }}
+        >
+          <View className="flex-row items-center justify-between gap-3">
+            <View className="flex-1">
+              <Text className="text-text-primary text-xl font-semibold">
+                {t.home.playgroundSectionTitle}
+              </Text>
+              <Text className="text-text-secondary mt-2 text-[15px] leading-6">
+                {t.home.playgroundSectionSubtext}
+              </Text>
+            </View>
+            <Pressable
+              onPress={() => navigation.navigate("Playground")}
+              className="rounded-full bg-brand-primary px-5 py-2.5 active:opacity-90"
+            >
+              <Text className="text-text-inverse text-sm font-semibold">
+                {t.home.openPlaygroundCta}
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+
         {!isMorningNotificationEnabled ? (
           <>
             <View className="mt-8 flex-row items-center">

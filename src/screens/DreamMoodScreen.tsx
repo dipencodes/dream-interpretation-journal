@@ -13,6 +13,7 @@ import { getFunctions, httpsCallable } from "@react-native-firebase/functions";
 import type { RootStackParamList } from "../navigation/types";
 import { t } from "../i18n";
 import { saveDream, type DreamRecord } from "../services/dreamStorage";
+import { savePlaygroundDream } from "../services/playgroundStorage";
 import { ensureAnonymousAuth } from "../services/auth";
 import {
   getDefaultInterpretMethod,
@@ -51,7 +52,7 @@ function Dots({ activeIndex = 2, total = 3 }: { activeIndex?: number; total?: nu
 }
 
 export function DreamMoodScreen({ route, navigation }: Props) {
-  const { dreamDate, dreamText } = route.params;
+  const { dreamDate, dreamText, context = "journal" } = route.params;
   const [selectedMoodId, setSelectedMoodId] = useState<MoodId | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isRunningAi, setIsRunningAi] = useState(false);
@@ -73,6 +74,18 @@ export function DreamMoodScreen({ route, navigation }: Props) {
     moodLabel: selectedMood?.title ?? undefined,
     moodIcon: selectedMood?.id ?? undefined,
   });
+
+  const persistDream = async (record: DreamRecord) => {
+    if (context === "playground") {
+      await savePlaygroundDream(record);
+      return;
+    }
+
+    await saveDream(record);
+    await refreshMorningReminderSchedule().catch(() => {
+      // Keep dream save flow resilient if notifications cannot be refreshed.
+    });
+  };
 
   const runInterpretation = async (method: InterpretMethodKey, gateUid: string) => {
     await trackInterpretationStarted({ method, source_screen: "dream_mood" });
@@ -108,13 +121,10 @@ export function DreamMoodScreen({ route, navigation }: Props) {
         },
       };
 
-      await saveDream(record);
-      await refreshMorningReminderSchedule().catch(() => {
-        // Keep dream save flow resilient if notifications cannot be refreshed.
-      });
+      await persistDream(record);
       await trackInterpretationSucceeded({ method, source_screen: "dream_mood" });
       await consumeFreeUseIfNeeded(gateUid);
-      navigation.navigate("DreamSummary", { dream: record });
+      navigation.navigate("DreamSummary", { dream: record, context });
     } catch (error: unknown) {
       await trackInterpretationFailed({
         method,
@@ -130,11 +140,8 @@ export function DreamMoodScreen({ route, navigation }: Props) {
     try {
       setIsSaving(true);
       const record = buildBaseRecord();
-      await saveDream(record);
-      await refreshMorningReminderSchedule().catch(() => {
-        // Keep dream save flow resilient if notifications cannot be refreshed.
-      });
-      navigation.navigate("DreamSummary", { dream: record });
+      await persistDream(record);
+      navigation.navigate("DreamSummary", { dream: record, context });
     } catch (error: any) {
       Alert.alert("Error", error?.message ?? t.dreamMood.saveError);
     } finally {
@@ -159,6 +166,7 @@ export function DreamMoodScreen({ route, navigation }: Props) {
           moodLabel: selectedMood.title,
           moodIcon: selectedMood.id,
           selectedMoodId: selectedMood.id,
+          context,
         });
         return;
       }

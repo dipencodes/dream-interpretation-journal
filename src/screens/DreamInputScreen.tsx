@@ -47,7 +47,8 @@ function Dots({ activeIndex = 1, total = 2 }) {
   );
 }
 
-export function DreamInputScreen({ navigation }: Props) {
+export function DreamInputScreen({ route, navigation }: Props) {
+  const context = route.params?.context ?? "journal";
   const [dreamText, setDreamText] = useState("");
   const [date, setDate] = useState(new Date());
   const [showPicker, setShowPicker] = useState(false);
@@ -66,6 +67,7 @@ export function DreamInputScreen({ navigation }: Props) {
     navigation.navigate("DreamMood", {
       dreamText: dreamText.trim(),
       dreamDate: dreamDateFormatted,
+      context,
     });
   };
 
@@ -214,7 +216,7 @@ export function DreamInputScreen({ navigation }: Props) {
               </Text>
             </Pressable>
 
-            {!canContinue ? (
+            {!canContinue && context === "journal" ? (
               <Pressable
                 onPress={onAddLaterPress}
                 className="mt-4 self-center rounded-full px-4 py-2 active:opacity-80"

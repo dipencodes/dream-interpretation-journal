@@ -8,6 +8,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import Clipboard from "@react-native-clipboard/clipboard";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { getApp } from "@react-native-firebase/app";
 import { getFunctions, httpsCallable } from "@react-native-firebase/functions";
@@ -19,6 +20,10 @@ import {
   type DreamRecord,
   type MethodInterpretation,
 } from "../services/dreamStorage";
+import {
+  deletePlaygroundDream,
+  upsertPlaygroundDream,
+} from "../services/playgroundStorage";
 import type { InterpretMethodKey } from "../services/appPreferences";
 import { canRunAiInterpretation, consumeFreeUseIfNeeded } from "../services/paywallGate";
 import { MoodIcon } from "../components/MoodIcon";
@@ -118,6 +123,7 @@ function getNormalizedInterpretations(dream: DreamRecord) {
 }
 
 export function DreamSummaryScreen({ route, navigation }: Props) {
+  const context = route.params.context ?? "journal";
   const [dream, setDream] = useState<DreamRecord>(route.params.dream);
   const [dreamDraft, setDreamDraft] = useState(route.params.dream.dreamText);
   const [isEditingDream, setIsEditingDream] = useState(false);
@@ -178,6 +184,8 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
     () => getExcerpt(normalizedInterpretationText),
     [normalizedInterpretationText]
   );
+  const hasQuickTakeText = interpretationQuickTake.trim().length > 0;
+  const hasDetailsText = normalizedInterpretationText.trim().length > 0;
 
   const interpretedMethods = useMemo(() => {
     const methods = new Set<InterpretMethodKey>();
@@ -229,7 +237,11 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
         ...dream,
         dreamText: trimmed,
       };
-      await upsertDream(updatedDream);
+      if (context === "playground") {
+        await upsertPlaygroundDream(updatedDream);
+      } else {
+        await upsertDream(updatedDream);
+      }
       setDream(updatedDream);
       setExpandedDream(false);
       setIsEditingDream(false);
@@ -291,7 +303,11 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
         },
       };
 
-      await upsertDream(updatedDream);
+      if (context === "playground") {
+        await upsertPlaygroundDream(updatedDream);
+      } else {
+        await upsertDream(updatedDream);
+      }
       await trackInterpretationSucceeded({
         method,
         source_screen: "dream_summary",
@@ -328,6 +344,45 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
     }
   };
 
+  const copyText = async (value: string) => {
+    const trimmed = value.trim();
+    if (!trimmed) return;
+
+    try {
+      Clipboard.setString(trimmed);
+      Alert.alert("Success", t.dreamSummary.copySuccessMessage);
+    } catch {
+      Alert.alert("Error", t.dreamSummary.copyErrorMessage);
+    }
+  };
+
+  const onDeletePlaygroundDream = () => {
+    if (context !== "playground") return;
+
+    Alert.alert(
+      t.playground.deleteConfirmTitle,
+      t.playground.deleteConfirmMessage,
+      [
+        {
+          text: t.playground.deleteCancelAction,
+          style: "cancel",
+        },
+        {
+          text: t.playground.deleteConfirmAction,
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deletePlaygroundDream(dream.id);
+              navigation.replace("Playground");
+            } catch {
+              Alert.alert("Error", t.playground.deleteError);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <View className="flex-1 bg-bg-base">
       <View pointerEvents="none" className="absolute inset-0">
@@ -362,13 +417,24 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
         contentContainerStyle={{ paddingBottom: 26 }}
         showsVerticalScrollIndicator={false}
       >
-        <View className="mb-4 flex-row">
+        <View className="mb-4 flex-row items-center justify-between">
           <Pressable
             onPress={onGoHome}
             className="h-11 w-11 items-center justify-center rounded-full border border-border-subtle bg-bg-surface active:opacity-90"
           >
             <Text className="text-text-primary text-xl">⌂</Text>
           </Pressable>
+
+          {context === "playground" ? (
+            <Pressable
+              onPress={onDeletePlaygroundDream}
+              className="rounded-full border border-red-200 bg-red-50 px-4 py-2 active:opacity-90"
+            >
+              <Text className="text-red-600 text-sm font-semibold">
+                {t.playground.deleteCta}
+              </Text>
+            </Pressable>
+          ) : null}
         </View>
 
         <View className="items-center">
@@ -525,18 +591,44 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
           {currentInterpretation ? (
             <>
               <View className="mt-3 rounded-2xl border border-brand-primary/30 bg-brand-primary/10 px-4 py-3">
-                <Text className="text-text-primary text-[11px] font-semibold uppercase tracking-[0.8px]">
-                  {t.dreamSummary.quickTakeTitle}
-                </Text>
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-text-primary text-[11px] font-semibold uppercase tracking-[0.8px]">
+                    {t.dreamSummary.quickTakeTitle}
+                  </Text>
+                  {hasQuickTakeText ? (
+                    <Pressable
+                      onPress={() => copyText(interpretationQuickTake)}
+                      accessibilityRole="button"
+                      accessibilityLabel="Copy quick meaning"
+                      className="flex-row items-center rounded-full border border-border-subtle bg-bg-surface px-2.5 py-1 active:opacity-90"
+                    >
+                      <Text className="text-text-secondary mr-1 text-xs">{t.dreamSummary.copyCta}</Text>
+                      <Text className="text-text-secondary text-xs">⧉</Text>
+                    </Pressable>
+                  ) : null}
+                </View>
                 <Text className="text-text-primary mt-1 text-[15px] leading-6 font-medium">
                   {interpretationQuickTake}
                 </Text>
               </View>
 
               <View className="mt-3 rounded-2xl border border-border-subtle bg-bg-elevated px-4 py-3">
-                <Text className="text-text-primary text-[11px] font-semibold uppercase tracking-[0.8px]">
-                  {t.dreamSummary.detailsTitle}
-                </Text>
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-text-primary text-[11px] font-semibold uppercase tracking-[0.8px]">
+                    {t.dreamSummary.detailsTitle}
+                  </Text>
+                  {hasDetailsText ? (
+                    <Pressable
+                      onPress={() => copyText(normalizedInterpretationText)}
+                      accessibilityRole="button"
+                      accessibilityLabel="Copy full reflection"
+                      className="flex-row items-center rounded-full border border-border-subtle bg-bg-surface px-2.5 py-1 active:opacity-90"
+                    >
+                      <Text className="text-text-secondary mr-1 text-xs">{t.dreamSummary.copyCta}</Text>
+                      <Text className="text-text-secondary text-xs">⧉</Text>
+                    </Pressable>
+                  ) : null}
+                </View>
 
                 <View className="mt-2">
                   {expandedInterpretation

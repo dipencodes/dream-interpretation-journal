@@ -15,6 +15,7 @@ import type { RootStackParamList } from "../navigation/types";
 import { t } from "../i18n";
 import { ensureAnonymousAuth } from "../services/auth";
 import { saveDream, type DreamRecord } from "../services/dreamStorage";
+import { savePlaygroundDream } from "../services/playgroundStorage";
 import {
   setDefaultInterpretMethod,
   type InterpretMethodKey,
@@ -92,7 +93,15 @@ function MethodIcon({ method }: { method: InterpretMethodKey }) {
 }
 
 export function DreamInterpretMethodScreen({ route, navigation }: Props) {
-  const { dreamDate, dreamText, moodLabel, moodIcon, selectedMoodId, presetMethod } = route.params;
+  const {
+    dreamDate,
+    dreamText,
+    moodLabel,
+    moodIcon,
+    selectedMoodId,
+    presetMethod,
+    context = "journal",
+  } = route.params;
   const [selectedMethod, setSelectedMethod] = useState<InterpretMethodKey | null>(
     presetMethod ?? null
   );
@@ -100,6 +109,18 @@ export function DreamInterpretMethodScreen({ route, navigation }: Props) {
   const [isInterpreting, setIsInterpreting] = useState(false);
 
   const canInterpret = useMemo(() => Boolean(selectedMethod) && !isInterpreting, [selectedMethod, isInterpreting]);
+
+  const persistDream = async (record: DreamRecord) => {
+    if (context === "playground") {
+      await savePlaygroundDream(record);
+      return;
+    }
+
+    await saveDream(record);
+    await refreshMorningReminderSchedule().catch(() => {
+      // Keep dream save flow resilient if notifications cannot be refreshed.
+    });
+  };
 
   const onInterpret = async () => {
     if (!selectedMethod || isInterpreting) return;
@@ -157,16 +178,13 @@ export function DreamInterpretMethodScreen({ route, navigation }: Props) {
         },
       };
 
-      await saveDream(record);
-      await refreshMorningReminderSchedule().catch(() => {
-        // Keep dream save flow resilient if notifications cannot be refreshed.
-      });
+      await persistDream(record);
       await trackInterpretationSucceeded({
         method: selectedMethod,
         source_screen: "dream_interpret_method",
       });
       await consumeFreeUseIfNeeded(gate.uid);
-      navigation.navigate("DreamSummary", { dream: record });
+      navigation.navigate("DreamSummary", { dream: record, context });
     } catch (error: unknown) {
       if (didStartInterpretation && selectedMethod) {
         await trackInterpretationFailed({
