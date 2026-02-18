@@ -49,6 +49,7 @@ function Dots({ activeIndex = 1, total = 2 }) {
 
 export function DreamInputScreen({ route, navigation }: Props) {
   const context = route.params?.context ?? "journal";
+  const postCreateBackTarget = route.params?.postCreateBackTarget;
   const [dreamText, setDreamText] = useState("");
   const [date, setDate] = useState(new Date());
   const [showPicker, setShowPicker] = useState(false);
@@ -68,6 +69,7 @@ export function DreamInputScreen({ route, navigation }: Props) {
       dreamText: dreamText.trim(),
       dreamDate: dreamDateFormatted,
       context,
+      postCreateBackTarget,
     });
   };
 

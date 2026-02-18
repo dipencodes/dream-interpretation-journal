@@ -171,7 +171,10 @@ export function PlaygroundScreen({ navigation }: Props) {
 
             <Pressable
               onPress={() =>
-                navigation.navigate("DreamInput", { context: "playground" })
+                navigation.navigate("DreamInput", {
+                  context: "playground",
+                  postCreateBackTarget: "playground",
+                })
               }
               className="rounded-full bg-brand-primary px-4 py-2 active:opacity-90"
             >

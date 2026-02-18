@@ -41,6 +41,7 @@ export function NotificationSettingsScreen({ navigation }: Props) {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [draftTime, setDraftTime] = useState<Date | null>(null);
   const [preferences, setPreferences] = useState<NotificationPreferences>({
     morningEnabled: false,
     morningHour: 7,
@@ -72,6 +73,28 @@ export function NotificationSettingsScreen({ navigation }: Props) {
   const persistPreferences = async (next: NotificationPreferences) => {
     setPreferences(next);
     await setNotificationPreferences(next);
+  };
+
+  const persistSelectedTime = async (selectedTime: Date): Promise<boolean> => {
+    const next: NotificationPreferences = {
+      ...preferences,
+      morningHour: selectedTime.getHours(),
+      morningMinute: selectedTime.getMinutes(),
+    };
+
+    try {
+      setIsSaving(true);
+      await persistPreferences(next);
+      if (next.morningEnabled) {
+        await scheduleMorningReminder(next.morningHour, next.morningMinute);
+      }
+      return true;
+    } catch (error: any) {
+      Alert.alert("Error", error?.message ?? t.notifications.saveError);
+      return false;
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const onToggleMorningNotifications = async (enabled: boolean) => {
@@ -122,28 +145,26 @@ export function NotificationSettingsScreen({ navigation }: Props) {
   const onChangeTime = async (event: DateTimePickerEvent, date?: Date) => {
     if (Platform.OS === "android") {
       setShowTimePicker(false);
+      if (!date || event.type !== "set") return;
+      await persistSelectedTime(date);
+      return;
     }
+
     if (!date) return;
+    setDraftTime(date);
+  };
 
-    const next: NotificationPreferences = {
-      ...preferences,
-      morningHour: date.getHours(),
-      morningMinute: date.getMinutes(),
-    };
+  const onOpenTimePicker = () => {
+    setDraftTime(timeValue);
+    setShowTimePicker(true);
+  };
 
-    try {
-      setIsSaving(true);
-      await persistPreferences(next);
-      if (next.morningEnabled) {
-        await scheduleMorningReminder(next.morningHour, next.morningMinute);
-      }
-      if (Platform.OS === "ios" && event.type === "set") {
-        setShowTimePicker(false);
-      }
-    } catch (error: any) {
-      Alert.alert("Error", error?.message ?? t.notifications.saveError);
-    } finally {
-      setIsSaving(false);
+  const onDoneTimePicker = async () => {
+    if (isSaving) return;
+    const selectedTime = draftTime ?? timeValue;
+    const saved = await persistSelectedTime(selectedTime);
+    if (saved) {
+      setShowTimePicker(false);
     }
   };
 
@@ -199,7 +220,7 @@ export function NotificationSettingsScreen({ navigation }: Props) {
             </View>
 
             <Pressable
-              onPress={() => setShowTimePicker((prev) => !prev)}
+              onPress={onOpenTimePicker}
               className="mt-4 rounded-3xl border border-border-subtle bg-bg-surface px-5 py-5 active:opacity-90"
               style={{
                 shadowColor: "#000",
@@ -225,10 +246,26 @@ export function NotificationSettingsScreen({ navigation }: Props) {
               <View className="mt-3 rounded-2xl border border-border-subtle bg-bg-surface px-2 py-3">
                 <DateTimePicker
                   mode="time"
-                  value={timeValue}
+                  value={draftTime ?? timeValue}
                   display={Platform.OS === "ios" ? "spinner" : "default"}
                   onChange={onChangeTime}
                 />
+                {Platform.OS === "ios" ? (
+                  <View className="mt-2 items-end px-2">
+                    <Pressable
+                      onPress={onDoneTimePicker}
+                      disabled={isSaving}
+                      className={[
+                        "rounded-full bg-brand-primary px-4 py-2",
+                        isSaving ? "opacity-70" : "active:opacity-90",
+                      ].join(" ")}
+                    >
+                      <Text className="text-text-inverse text-sm font-semibold">
+                        {t.notifications.timeDoneCta}
+                      </Text>
+                    </Pressable>
+                  </View>
+                ) : null}
               </View>
             ) : null}
           </>

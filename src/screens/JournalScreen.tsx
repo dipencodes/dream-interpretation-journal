@@ -346,7 +346,12 @@ export function JournalScreen({ navigation }: Props) {
             </Pressable>
 
             <Pressable
-              onPress={() => navigation.navigate("DreamInput")}
+              onPress={() =>
+                navigation.navigate("DreamInput", {
+                  context: "journal",
+                  postCreateBackTarget: "journal",
+                })
+              }
               className="rounded-full bg-brand-primary px-4 py-2 active:opacity-90"
             >
               <Text className="text-text-inverse text-base font-semibold">

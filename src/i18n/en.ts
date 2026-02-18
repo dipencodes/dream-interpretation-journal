@@ -151,6 +151,7 @@ export const en = {
       "Enable notifications to remind you to write down your dreams upon awakening.",
     morningToggleLabel: "Morning notifications",
     timeLabel: "Time",
+    timeDoneCta: "Done",
     permissionTitle: "Permission needed",
     permissionDeniedMessage:
       "Please allow notifications to enable morning reminders.",

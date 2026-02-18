@@ -11,7 +11,10 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { getApp } from "@react-native-firebase/app";
 import { getFunctions, httpsCallable } from "@react-native-firebase/functions";
 import Svg, { Circle, Line, Path } from "react-native-svg";
-import type { RootStackParamList } from "../navigation/types";
+import type {
+  DreamPostCreateBackTarget,
+  RootStackParamList,
+} from "../navigation/types";
 import { t } from "../i18n";
 import { ensureAnonymousAuth } from "../services/auth";
 import { saveDream, type DreamRecord } from "../services/dreamStorage";
@@ -43,6 +46,12 @@ const METHOD_OPTIONS: MethodOption[] = [
   { key: "islamic", title: "Islam" },
   { key: "scientific", title: "Scientific" },
 ];
+
+function getBackTargetRouteName(target: DreamPostCreateBackTarget) {
+  if (target === "home") return "Home";
+  if (target === "playground") return "Playground";
+  return "Journal";
+}
 
 function MethodIcon({ method }: { method: InterpretMethodKey }) {
   const stroke = "#D97706";
@@ -101,6 +110,7 @@ export function DreamInterpretMethodScreen({ route, navigation }: Props) {
     selectedMoodId,
     presetMethod,
     context = "journal",
+    postCreateBackTarget,
   } = route.params;
   const [selectedMethod, setSelectedMethod] = useState<InterpretMethodKey | null>(
     presetMethod ?? null
@@ -119,6 +129,22 @@ export function DreamInterpretMethodScreen({ route, navigation }: Props) {
     await saveDream(record);
     await refreshMorningReminderSchedule().catch(() => {
       // Keep dream save flow resilient if notifications cannot be refreshed.
+    });
+  };
+
+  const navigateToSummary = (record: DreamRecord) => {
+    if (!postCreateBackTarget) {
+      navigation.navigate("DreamSummary", { dream: record, context });
+      return;
+    }
+
+    const targetRouteName = getBackTargetRouteName(postCreateBackTarget);
+    navigation.reset({
+      index: 1,
+      routes: [
+        { name: targetRouteName },
+        { name: "DreamSummary", params: { dream: record, context } },
+      ],
     });
   };
 
@@ -184,7 +210,7 @@ export function DreamInterpretMethodScreen({ route, navigation }: Props) {
         source_screen: "dream_interpret_method",
       });
       await consumeFreeUseIfNeeded(gate.uid);
-      navigation.navigate("DreamSummary", { dream: record, context });
+      navigateToSummary(record);
     } catch (error: unknown) {
       if (didStartInterpretation && selectedMethod) {
         await trackInterpretationFailed({

@@ -316,7 +316,12 @@ export function HomeScreen({ navigation }: Props) {
 
             <View className="mt-4 flex-row items-center gap-3">
               <Pressable
-                onPress={() => navigation.navigate("DreamInput")}
+                onPress={() =>
+                  navigation.navigate("DreamInput", {
+                    context: "journal",
+                    postCreateBackTarget: "journal",
+                  })
+                }
                 className="rounded-full bg-brand-primary px-5 py-2.5 active:opacity-90"
               >
                 <Text className="text-text-inverse text-sm font-semibold">
@@ -411,7 +416,12 @@ export function HomeScreen({ navigation }: Props) {
 
         <View className="mt-4 flex-row items-center justify-center gap-3">
           <Pressable
-            onPress={() => navigation.navigate("DreamInput")}
+            onPress={() =>
+              navigation.navigate("DreamInput", {
+                context: "journal",
+                postCreateBackTarget: "journal",
+              })
+            }
             className="rounded-2xl bg-brand-primary px-6 py-3.5 active:opacity-90"
           >
             <Text className="text-text-inverse text-base font-semibold">

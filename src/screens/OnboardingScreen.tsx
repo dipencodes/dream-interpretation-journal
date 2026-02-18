@@ -52,7 +52,15 @@ export function OnboardingScreen({ navigation }: Props) {
     try {
       navigation.reset({
         index: 0,
-        routes: [{ name: "DreamInput" }],
+        routes: [
+          {
+            name: "DreamInput",
+            params: {
+              context: "journal",
+              postCreateBackTarget: "home",
+            },
+          },
+        ],
       });
     } catch (error: any) {
       Alert.alert("Error", error?.message ?? "Could not continue. Please try again.");

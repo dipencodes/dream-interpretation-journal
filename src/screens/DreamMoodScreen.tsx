@@ -10,7 +10,10 @@ import {
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { getApp } from "@react-native-firebase/app";
 import { getFunctions, httpsCallable } from "@react-native-firebase/functions";
-import type { RootStackParamList } from "../navigation/types";
+import type {
+  DreamPostCreateBackTarget,
+  RootStackParamList,
+} from "../navigation/types";
 import { t } from "../i18n";
 import { saveDream, type DreamRecord } from "../services/dreamStorage";
 import { savePlaygroundDream } from "../services/playgroundStorage";
@@ -32,6 +35,12 @@ import { MOOD_OPTIONS, type MoodId } from "../constants/moods";
 
 type Props = NativeStackScreenProps<RootStackParamList, "DreamMood">;
 
+function getBackTargetRouteName(target: DreamPostCreateBackTarget) {
+  if (target === "home") return "Home";
+  if (target === "playground") return "Playground";
+  return "Journal";
+}
+
 function Dots({ activeIndex = 2, total = 3 }: { activeIndex?: number; total?: number }) {
   return (
     <View className="flex-row items-center justify-center gap-2">
@@ -52,7 +61,12 @@ function Dots({ activeIndex = 2, total = 3 }: { activeIndex?: number; total?: nu
 }
 
 export function DreamMoodScreen({ route, navigation }: Props) {
-  const { dreamDate, dreamText, context = "journal" } = route.params;
+  const {
+    dreamDate,
+    dreamText,
+    context = "journal",
+    postCreateBackTarget,
+  } = route.params;
   const [selectedMoodId, setSelectedMoodId] = useState<MoodId | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isRunningAi, setIsRunningAi] = useState(false);
@@ -84,6 +98,22 @@ export function DreamMoodScreen({ route, navigation }: Props) {
     await saveDream(record);
     await refreshMorningReminderSchedule().catch(() => {
       // Keep dream save flow resilient if notifications cannot be refreshed.
+    });
+  };
+
+  const navigateToSummary = (record: DreamRecord) => {
+    if (!postCreateBackTarget) {
+      navigation.navigate("DreamSummary", { dream: record, context });
+      return;
+    }
+
+    const targetRouteName = getBackTargetRouteName(postCreateBackTarget);
+    navigation.reset({
+      index: 1,
+      routes: [
+        { name: targetRouteName },
+        { name: "DreamSummary", params: { dream: record, context } },
+      ],
     });
   };
 
@@ -124,7 +154,7 @@ export function DreamMoodScreen({ route, navigation }: Props) {
       await persistDream(record);
       await trackInterpretationSucceeded({ method, source_screen: "dream_mood" });
       await consumeFreeUseIfNeeded(gateUid);
-      navigation.navigate("DreamSummary", { dream: record, context });
+      navigateToSummary(record);
     } catch (error: unknown) {
       await trackInterpretationFailed({
         method,
@@ -141,7 +171,7 @@ export function DreamMoodScreen({ route, navigation }: Props) {
       setIsSaving(true);
       const record = buildBaseRecord();
       await persistDream(record);
-      navigation.navigate("DreamSummary", { dream: record, context });
+      navigateToSummary(record);
     } catch (error: any) {
       Alert.alert("Error", error?.message ?? t.dreamMood.saveError);
     } finally {
@@ -167,6 +197,7 @@ export function DreamMoodScreen({ route, navigation }: Props) {
           moodIcon: selectedMood.id,
           selectedMoodId: selectedMood.id,
           context,
+          postCreateBackTarget,
         });
         return;
       }
