@@ -1,8 +1,18 @@
 import React, { useCallback, useState } from "react";
-import { ActivityIndicator, Alert, Platform, Pressable, ScrollView, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  Linking,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/types";
+import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from "../config/legal";
 import { BottomTabDock } from "../components/BottomTabDock";
 import { t } from "../i18n";
 import {
@@ -98,6 +108,14 @@ export function SettingsScreen({ navigation }: Props) {
     navigation.navigate("Paywall", { entry: "direct" });
   };
 
+  const openExternalUrl = useCallback(async (url: string) => {
+    try {
+      await Linking.openURL(url);
+    } catch {
+      Alert.alert(t.settings.title, t.settings.legalOpenError);
+    }
+  }, []);
+
   const onOpenSubscriptionManagement = async () => {
     if (isManagingSubscription) return;
 
@@ -158,6 +176,16 @@ export function SettingsScreen({ navigation }: Props) {
             title={t.settings.notificationsTitle}
             subtitle={t.settings.notificationsMenuSubtitle}
             onPress={() => navigation.navigate("NotificationSettings")}
+          />
+          <SettingsItem
+            title={t.settings.privacyPolicyTitle}
+            subtitle={t.settings.privacyPolicySubtitle}
+            onPress={() => openExternalUrl(PRIVACY_POLICY_URL)}
+          />
+          <SettingsItem
+            title={t.settings.termsTitle}
+            subtitle={t.settings.termsSubtitle}
+            onPress={() => openExternalUrl(TERMS_OF_USE_URL)}
           />
 
           {!subscriptionStatus.isPremiumActive ? (

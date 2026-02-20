@@ -143,6 +143,11 @@ export const en = {
     manageStoreAndroid: "Manage through Google Play.",
     subscriptionLoadError: "Could not load subscription status right now.",
     subscriptionManageError: "Could not open subscription management.",
+    privacyPolicyTitle: "Privacy Policy",
+    privacyPolicySubtitle: "Read how your data is collected and used.",
+    termsTitle: "Terms of Use",
+    termsSubtitle: "Review the app terms and subscription agreement.",
+    legalOpenError: "Could not open this link. Please try again.",
   },
 
   notifications: {
