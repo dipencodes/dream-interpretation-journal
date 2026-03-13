@@ -1,11 +1,42 @@
 const functions = require("firebase-functions");
+const {defineSecret, defineString} = require("firebase-functions/params");
 const OpenAI = require("openai");
 const fetch = require("node-fetch");
 
-const openai = new OpenAI({
-  apiKey: functions.config().openai.key,
-  fetch,
-});
+const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
+const OPENAI_VECTOR_HINDU_STORE_ID = defineString(
+  "OPENAI_VECTOR_HINDU_STORE_ID",
+  {default: ""}
+);
+const OPENAI_VECTOR_ISLAMIC_STORE_ID = defineString(
+  "OPENAI_VECTOR_ISLAMIC_STORE_ID",
+  {default: ""}
+);
+const OPENAI_VECTOR_CHRISTIAN_STORE_ID = defineString(
+  "OPENAI_VECTOR_CHRISTIAN_STORE_ID",
+  {default: ""}
+);
+const OPENAI_VECTOR_SCIENTIFIC_STORE_ID = defineString(
+  "OPENAI_VECTOR_SCIENTIFIC_STORE_ID",
+  {default: ""}
+);
+const OPENAI_VECTOR_BUDDHIST_STORE_ID = defineString(
+  "OPENAI_VECTOR_BUDDHIST_STORE_ID",
+  {default: ""}
+);
+
+let openaiClient = null;
+
+function getOpenAIClient() {
+  if (!openaiClient) {
+    openaiClient = new OpenAI({
+      apiKey: OPENAI_API_KEY.value(),
+      fetch,
+    });
+  }
+
+  return openaiClient;
+}
 
 // Allowed source keys
 const ALLOWED_SOURCES = [
@@ -18,16 +49,14 @@ const ALLOWED_SOURCES = [
 
 const DEFAULT_SOURCE = "hindu";
 
-// Map source key -> vector store ID from Firebase config
+// Map source key -> vector store ID from parameterized config.
 function getVectorStoreId(sourceKey) {
-  const cfg = functions.config().openai;
-
   const map = {
-    hindu: cfg.vector_hindu_store_id,
-    islamic: cfg.vector_islamic_store_id,
-    christian: cfg.vector_christian_store_id,
-    scientific: cfg.vector_scientific_store_id,
-    buddhist: cfg.vector_buddhist_store_id,
+    hindu: OPENAI_VECTOR_HINDU_STORE_ID.value(),
+    islamic: OPENAI_VECTOR_ISLAMIC_STORE_ID.value(),
+    christian: OPENAI_VECTOR_CHRISTIAN_STORE_ID.value(),
+    scientific: OPENAI_VECTOR_SCIENTIFIC_STORE_ID.value(),
+    buddhist: OPENAI_VECTOR_BUDDHIST_STORE_ID.value(),
   };
 
   return map[sourceKey] || null;
@@ -51,7 +80,9 @@ function getSourceInstruction(sourceKey) {
   }
 }
 
-exports.interpretDream = functions.https.onCall(async (data, context) => {
+exports.interpretDream = functions
+    .runWith({secrets: [OPENAI_API_KEY]})
+    .https.onCall(async (data, context) => {
   // Require auth (anonymous is fine)
   if (!context.auth) {
     throw new functions.https.HttpsError(
@@ -91,7 +122,7 @@ exports.interpretDream = functions.https.onCall(async (data, context) => {
   }
 
   try {
-    const response = await openai.responses.create({
+    const response = await getOpenAIClient().responses.create({
       model: "gpt-4.1-mini",
       input: [
         {
@@ -179,4 +210,4 @@ Interpret this dream.
       "Failed to interpret dream."
     );
   }
-});
+    });
