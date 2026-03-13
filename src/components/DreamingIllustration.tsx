@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Image } from "react-native";
+import { View } from "react-native";
 import Svg, { Circle, Ellipse, Path, G } from "react-native-svg";
 
 export function DreamingIllustration({

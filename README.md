@@ -1,5 +1,15 @@
 This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
 
+# Runtime Requirement
+
+Use **Node 20.x** for local development and CI.
+
+```sh
+node -v
+```
+
+This repo includes `.nvmrc` and `.node-version` set to `20` for version managers.
+
 # Getting Started
 
 > **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
@@ -95,3 +105,9 @@ To learn more about React Native, take a look at the following resources:
 - [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
 - [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
 - [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+
+# Dependency Notes
+
+- `@react-native-firebase/*/lib/modular` imports are currently used in app code and intentionally left unchanged in this pass.
+- These are internal package paths and may break on future package upgrades.
+- Follow-up task: migrate those imports to public package entrypoints.
