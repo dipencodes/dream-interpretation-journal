@@ -10,6 +10,138 @@ node -v
 
 This repo includes `.nvmrc` and `.node-version` set to `20` for version managers.
 
+# Backend + Deployment Runbook
+
+## Firebase Functions: deploy/upload
+
+This app's callable backend lives in `functions/` and deploys to Firebase project `dream-interpretation-1a958` (from `.firebaserc`).
+
+1. Install Firebase CLI and log in (one-time):
+
+```sh
+npm install -g firebase-tools
+firebase login
+```
+
+2. Install function dependencies:
+
+```sh
+npm --prefix functions install
+```
+
+3. Set required secrets/params (details below), then deploy:
+
+```sh
+firebase deploy --only functions --project dream-interpretation-1a958
+```
+
+4. Check logs if needed:
+
+```sh
+firebase functions:log --project dream-interpretation-1a958
+```
+
+You can also deploy from inside `functions/` with:
+
+```sh
+npm run deploy
+```
+
+## Where vector stores are defined
+
+Vector store params are declared in `functions/index.js` with `defineString(...)`:
+
+- `OPENAI_VECTOR_HINDU_STORE_ID`
+- `OPENAI_VECTOR_ISLAMIC_STORE_ID`
+- `OPENAI_VECTOR_CHRISTIAN_STORE_ID`
+- `OPENAI_VECTOR_SCIENTIFIC_STORE_ID`
+- `OPENAI_VECTOR_BUDDHIST_STORE_ID`
+
+They are mapped to interpretation sources in `getVectorStoreId(sourceKey)` in `functions/index.js`.
+
+Per-project values are stored in:
+
+- `functions/.env.dream-interpretation-1a958`
+
+Update that file when vector store IDs change, then redeploy functions.
+
+## OpenAI API key (ChatGPT API key): how to push
+
+The OpenAI key is read as a Firebase Functions **secret** (`OPENAI_API_KEY`) in `functions/index.js` via `defineSecret`.
+
+Set/update it with:
+
+```sh
+firebase functions:secrets:set OPENAI_API_KEY --project dream-interpretation-1a958
+```
+
+Then redeploy:
+
+```sh
+firebase deploy --only functions --project dream-interpretation-1a958
+```
+
+Important:
+
+- Do not place `OPENAI_API_KEY` in source files.
+- Do not commit secret values to git.
+
+## Android deployment (release)
+
+### 1) Signing setup (one-time)
+
+Generate upload keystore (example):
+
+```sh
+keytool -genkeypair -v -storetype PKCS12 -keystore android/app/upload-keystore.jks -alias upload -keyalg RSA -keysize 2048 -validity 10000
+```
+
+Create `android/keystore.properties`:
+
+```properties
+storeFile=upload-keystore.jks
+storePassword=...
+keyAlias=upload
+keyPassword=...
+```
+
+`android/app/build.gradle` reads this file and uses `signingConfigs.release`.
+
+### 2) Build release artifact
+
+From `android/`:
+
+```sh
+./gradlew clean bundleRelease
+```
+
+Output AAB:
+
+`android/app/build/outputs/bundle/release/app-release.aab`
+
+Optional APK build:
+
+```sh
+./gradlew assembleRelease
+```
+
+Output APK:
+
+`android/app/build/outputs/apk/release/app-release.apk`
+
+### 3) Publish
+
+Upload the `.aab` to Google Play Console (internal testing / closed / production track).
+
+## Android keys/config locations
+
+- Release signing keystore: `android/app/upload-keystore.jks` (gitignored)
+- Keystore passwords/aliases: `android/keystore.properties` (gitignored)
+- Firebase Android app config: `android/app/google-services.json`
+- RevenueCat Android public SDK key: `src/config/revenuecat.ts`
+
+Note: `android/app/debug.keystore` is only for debug builds.
+
 # Getting Started
 
 > **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
