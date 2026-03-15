@@ -5,5 +5,5 @@ export const REVENUECAT_OFFERING_ID = "default";
 export const REVENUECAT_IOS_API_KEY = "appl_eAjMOWDZxMoVJZcqBnttouPcZfY";
 //export const REVENUECAT_IOS_API_KEY = "test_ZlPAjBJLlfYyHXWaJihHSzImHdh";
 
-export const REVENUECAT_ANDROID_API_KEY = "test_ZlPAjBJLlfYyHXWaJihHSzImHdh";
+export const REVENUECAT_ANDROID_API_KEY = "goog_BVMDEOlvrputHfJLVosHZHxHeKX";
 
