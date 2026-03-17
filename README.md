@@ -86,6 +86,78 @@ Important:
 - Do not place `OPENAI_API_KEY` in source files.
 - Do not commit secret values to git.
 
+## Meta Ads attribution + subscription optimization
+
+This app uses **Meta App Events for mobile apps** (not web pixel) and routes subscription revenue attribution through **RevenueCat -> Meta**.
+
+### 1) Install dependencies and iOS pods
+
+```sh
+npm install
+cd ios && bundle exec pod install && cd ..
+```
+
+### 2) Configure Meta app identifiers (build-time placeholders)
+
+Android placeholders (in `android/gradle.properties`):
+
+```properties
+META_FACEBOOK_APP_ID=123456789012345
+META_FACEBOOK_CLIENT_TOKEN=your_meta_client_token
+```
+
+iOS placeholders (Xcode Build Settings on target `DreamInterpretationJournal`):
+
+- `META_FACEBOOK_APP_ID`
+- `META_FACEBOOK_CLIENT_TOKEN`
+
+These values are consumed by:
+
+- iOS: `ios/DreamInterpretationJournal/Info.plist` (`FacebookAppID`, `FacebookClientToken`)
+- Android: `android/app/build.gradle` -> `resValue`/`manifestPlaceholders` -> `AndroidManifest.xml`
+
+### 3) RevenueCat -> Meta integration (required for subscription events)
+
+In RevenueCat dashboard:
+
+1. Open **Integrations** -> **Meta Ads**.
+2. Connect your Meta app/business.
+3. Enable forwarding of subscription lifecycle events.
+4. In Meta Ads Manager, optimize campaigns for **Subscribe**.
+
+Important: this app disables Meta auto purchase logging on-device to avoid duplicate purchase events.
+
+### 4) What is tracked from the app
+
+- App activation signal (`fb_mobile_activate_app`) at startup
+- `paywall_viewed` -> Meta `ViewedContent`
+- `paywall_checkout_started` -> Meta `InitiatedCheckout`
+- Successful subscription purchase is **not** sent from client; RevenueCat sends it to Meta.
+
+### 5) ATT behavior (iOS)
+
+- ATT permission is requested once, right before paywall display.
+- Prompt state is persisted in AsyncStorage key: `meta_att_prompted_before_paywall`.
+- Advertiser tracking is enabled/disabled based on ATT status.
+
+### 6) RevenueCat customer attribute bridge
+
+At app startup, Meta anonymous ID is read from the SDK and pushed to RevenueCat as subscriber attribute:
+
+- `$fbAnonId`
+
+This improves attribution matching for Meta campaigns.
+
+### 7) Verification checklist
+
+1. Fresh install app on test device.
+2. Open app and verify activation appears in Meta **Test Events**.
+3. Open paywall and verify `ViewedContent`.
+4. Tap paywall CTA and verify `InitiateCheckout`.
+5. Complete a test subscription purchase.
+6. Verify `Subscribe` (and related subscription events) arrives via RevenueCat integration.
+7. In RevenueCat customer profile, confirm `$fbAnonId` is populated.
+
 ## Android deployment (release)
 
 ### 1) Signing setup (one-time)

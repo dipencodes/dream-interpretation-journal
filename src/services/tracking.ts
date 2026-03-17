@@ -1,4 +1,9 @@
 import analytics from "@react-native-firebase/analytics";
+import {
+  logMetaFunnelEvent,
+  type MetaTrackingParams,
+  setMetaUserId,
+} from "./metaAttribution";
 
 export type TrackingPlanInterval = "weekly" | "monthly" | "yearly" | "unknown";
 
@@ -10,6 +15,7 @@ export type TrackingEventName =
   | "onboarding_completed_first_dream_saved"
   | "app_opened_from_notification"
   | "paywall_viewed"
+  | "paywall_checkout_started"
   | "paywall_closed"
   | "dream_saved"
   | "interpretation_started"
@@ -38,7 +44,21 @@ const firebaseTrackingProvider: TrackingProvider = {
   },
 };
 
-const provider: TrackingProvider = firebaseTrackingProvider;
+const metaTrackingProvider: TrackingProvider = {
+  async setUserId(userId: string): Promise<void> {
+    await setMetaUserId(userId);
+  },
+
+  async logEvent(name: TrackingEventName, params?: TrackingParams): Promise<void> {
+    if (name !== "paywall_viewed" && name !== "paywall_checkout_started") {
+      return;
+    }
+
+    await logMetaFunnelEvent(name, params as MetaTrackingParams);
+  },
+};
+
+const providers: TrackingProvider[] = [firebaseTrackingProvider, metaTrackingProvider];
 
 function sanitizeTrackingParams(params?: TrackingParams): SanitizedTrackingParams {
   if (!params) return {};
@@ -59,22 +79,30 @@ function sanitizeTrackingParams(params?: TrackingParams): SanitizedTrackingParam
 }
 
 async function safeSetUserId(userId: string): Promise<void> {
-  try {
-    await provider.setUserId(userId);
-  } catch {
-    // Analytics must never block app behavior.
-  }
+  await Promise.all(
+    providers.map(async (provider) => {
+      try {
+        await provider.setUserId(userId);
+      } catch {
+        // Analytics must never block app behavior.
+      }
+    })
+  );
 }
 
 async function safeLogEvent(
   name: TrackingEventName,
   params?: TrackingParams
 ): Promise<void> {
-  try {
-    await provider.logEvent(name, params);
-  } catch {
-    // Analytics must never block app behavior.
-  }
+  await Promise.all(
+    providers.map(async (provider) => {
+      try {
+        await provider.logEvent(name, params);
+      } catch {
+        // Analytics must never block app behavior.
+      }
+    })
+  );
 }
 
 export function normalizeTrackingErrorCode(error: unknown): string {
@@ -119,6 +147,10 @@ export async function trackAppOpenedFromNotification(params: {
 
 export async function trackPaywallViewed(): Promise<void> {
   await safeLogEvent("paywall_viewed");
+}
+
+export async function trackPaywallCheckoutStarted(): Promise<void> {
+  await safeLogEvent("paywall_checkout_started");
 }
 
 export async function trackPaywallClosed(params: {

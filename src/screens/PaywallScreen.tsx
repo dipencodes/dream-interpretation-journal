@@ -13,9 +13,11 @@ import {
 } from "../services/revenuecat";
 import {
   trackPaywallClosed,
+  trackPaywallCheckoutStarted,
   trackPaywallViewed,
   trackSubscriptionPurchaseSuccess,
 } from "../services/tracking";
+import { ensureMetaTrackingConsentBeforePaywall } from "../services/metaAttribution";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Paywall">;
 
@@ -29,6 +31,9 @@ export function PaywallScreen({ navigation, route }: Props) {
     setLoadError(null);
 
     try {
+      await ensureMetaTrackingConsentBeforePaywall();
+      await trackPaywallCheckoutStarted();
+
       const { uid } = await ensureAnonymousAuth();
       await syncRevenueCatUser(uid);
 
