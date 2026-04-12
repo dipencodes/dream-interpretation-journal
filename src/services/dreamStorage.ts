@@ -105,3 +105,9 @@ export async function upsertDream(record: DreamRecord) {
 
   await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(dreams));
 }
+
+export async function deleteDream(id: string): Promise<void> {
+  const dreams = await getDreams();
+  const next = dreams.filter((dream) => dream.id !== id);
+  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+}

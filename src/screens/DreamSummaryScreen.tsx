@@ -15,6 +15,7 @@ import type { RootStackParamList } from "../navigation/types";
 import { t } from "../i18n";
 import { ensureAnonymousAuth } from "../services/auth";
 import {
+  deleteDream,
   upsertDream,
   type DreamRecord,
   type MethodInterpretation,
@@ -400,26 +401,39 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
     }
   };
 
-  const onDeletePlaygroundDream = () => {
-    if (context !== "playground") return;
+  const onDeleteDream = () => {
+    const isPlayground = context === "playground";
 
     Alert.alert(
-      t.playground.deleteConfirmTitle,
-      t.playground.deleteConfirmMessage,
+      isPlayground ? t.playground.deleteConfirmTitle : t.journal.deleteConfirmTitle,
+      isPlayground ? t.playground.deleteConfirmMessage : t.journal.deleteConfirmMessage,
       [
         {
-          text: t.playground.deleteCancelAction,
+          text: isPlayground ? t.playground.deleteCancelAction : t.journal.deleteCancelAction,
           style: "cancel",
         },
         {
-          text: t.playground.deleteConfirmAction,
+          text: isPlayground ? t.playground.deleteConfirmAction : t.journal.deleteConfirmAction,
           style: "destructive",
           onPress: async () => {
             try {
-              await deletePlaygroundDream(dream.id);
-              navigation.replace("Playground");
+              if (isPlayground) {
+                await deletePlaygroundDream(dream.id);
+                navigation.replace("Playground");
+                return;
+              }
+
+              await deleteDream(dream.id);
+              if (navigation.canGoBack()) {
+                navigation.goBack();
+                return;
+              }
+              navigation.reset({
+                index: 0,
+                routes: [{ name: "Home" }],
+              });
             } catch {
-              Alert.alert("Error", t.playground.deleteError);
+              Alert.alert("Error", isPlayground ? t.playground.deleteError : t.journal.deleteError);
             }
           },
         },
@@ -471,16 +485,14 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
             <Text className="text-text-primary text-2xl">‹</Text>
           </Pressable>
 
-          {context === "playground" ? (
-            <Pressable
-              onPress={onDeletePlaygroundDream}
-              className="rounded-full border border-red-200 bg-red-50 px-4 py-2 active:opacity-90"
-            >
-              <Text className="text-red-600 text-sm font-semibold">
-                {t.playground.deleteCta}
-              </Text>
-            </Pressable>
-          ) : null}
+          <Pressable
+            onPress={onDeleteDream}
+            className="rounded-full border border-red-200 bg-red-50 px-4 py-2 active:opacity-90"
+          >
+            <Text className="text-red-600 text-sm font-semibold">
+              {context === "playground" ? t.playground.deleteCta : t.journal.deleteCta}
+            </Text>
+          </Pressable>
         </View>
 
         <View className="items-center">

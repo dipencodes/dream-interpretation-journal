@@ -101,6 +101,12 @@ export const en = {
     calendarYearLabel: "Year",
     calendarApplyCta: "Apply",
     calendarCancelCta: "Cancel",
+    deleteCta: "Delete",
+    deleteConfirmTitle: "Delete dream?",
+    deleteConfirmMessage: "This dream will be removed permanently.",
+    deleteConfirmAction: "Delete",
+    deleteCancelAction: "Cancel",
+    deleteError: "Could not delete this dream. Please try again.",
   },
 
   playground: {
