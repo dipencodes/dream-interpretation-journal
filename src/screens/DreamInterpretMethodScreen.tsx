@@ -118,6 +118,21 @@ export function DreamInterpretMethodScreen({ route, navigation }: Props) {
   const [makeDefault, setMakeDefault] = useState(false);
   const [isInterpreting, setIsInterpreting] = useState(false);
 
+  const confirmUseWeeklyFreeInterpretation = () =>
+    new Promise<boolean>((resolve) => {
+      Alert.alert(t.paywall.weeklyFreeConfirmTitle, t.paywall.weeklyFreeConfirmMessage, [
+        {
+          text: t.paywall.weeklyFreeConfirmNoCta,
+          style: "cancel",
+          onPress: () => resolve(false),
+        },
+        {
+          text: t.paywall.weeklyFreeConfirmYesCta,
+          onPress: () => resolve(true),
+        },
+      ]);
+    });
+
   const canInterpret = useMemo(() => Boolean(selectedMethod) && !isInterpreting, [selectedMethod, isInterpreting]);
 
   const persistDream = async (record: DreamRecord) => {
@@ -156,6 +171,13 @@ export function DreamInterpretMethodScreen({ route, navigation }: Props) {
       if (!gate.allowed) {
         navigation.navigate("Paywall");
         return;
+      }
+
+      if (gate.reason === "free" && gate.freeAccessType === "weekly") {
+        const shouldUseWeeklyFree = await confirmUseWeeklyFreeInterpretation();
+        if (!shouldUseWeeklyFree) {
+          return;
+        }
       }
 
       setIsInterpreting(true);

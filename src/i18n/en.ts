@@ -2,7 +2,8 @@ export const en = {
   onboarding: {
     title: "Every Dream has a meaning! Find yours'",
     subtitle:
-      "Capture your dreams, spot patterns, and get gentle AI insights whenever you’re ready.",
+      "Start with 2 free interpretations, then get 1 free interpretation every week.",
+    freeWeeklyBadge: "1 Free Interpretation Every Week",
     cta: "Start Interpreting your Dreams",
   },
 
@@ -166,7 +167,18 @@ export const en = {
   paywall: {
     title: "Unlock unlimited AI interpretations",
     subtitle:
-      "You have used your free interpretation. Subscribe to continue interpreting with all methods.",
+      "You have used this week's free interpretation. Subscribe for unlimited access, or come back next week for your next free one.",
+    weeklyFreeBannerTitle: "You still get 1 free interpretation every week",
+    weeklyFreeBannerSubtitle:
+      "New here? You get 2 free to start, then 1 free every week.",
+    weeklyFreeUsedTitle: "Weekly free interpretation used",
+    weeklyFreeUsedMessage:
+      "You used your free interpretation for this week. Your next free interpretation unlocks next week.",
+    weeklyFreeConfirmTitle: "Use this week's free interpretation?",
+    weeklyFreeConfirmMessage:
+      "This will use your 1 free interpretation for this week. Continue?",
+    weeklyFreeConfirmYesCta: "Use it",
+    weeklyFreeConfirmNoCta: "Not now",
     planWeekly: "Weekly",
     planMonthly: "Monthly",
     planYearly: "Yearly",

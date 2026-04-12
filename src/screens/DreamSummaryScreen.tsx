@@ -8,7 +8,6 @@ import {
   TextInput,
   View,
 } from "react-native";
-import Clipboard from "@react-native-clipboard/clipboard";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { getApp } from "@react-native-firebase/app";
 import { getFunctions, httpsCallable } from "@react-native-firebase/functions";
@@ -52,6 +51,22 @@ const ALL_METHODS: InterpretMethodKey[] = [
   "islamic",
   "scientific",
 ];
+
+function setClipboardText(value: string): boolean {
+  try {
+    // Lazy-load to avoid crashing if native clipboard module is missing in current build.
+    const clipboardModule = require("@react-native-clipboard/clipboard");
+    const clipboardApi = clipboardModule?.default ?? clipboardModule;
+    if (typeof clipboardApi?.setString !== "function") {
+      return false;
+    }
+
+    clipboardApi.setString(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 function getExcerpt(text: string, max = 220) {
   if (text.length <= max) return text;
@@ -135,6 +150,20 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
   const [expandedInterpretation, setExpandedInterpretation] = useState(false);
   const [currentMethod, setCurrentMethod] = useState<InterpretMethodKey | null>(null);
   const [isInterpretingMethod, setIsInterpretingMethod] = useState<InterpretMethodKey | null>(null);
+  const confirmUseWeeklyFreeInterpretation = () =>
+    new Promise<boolean>((resolve) => {
+      Alert.alert(t.paywall.weeklyFreeConfirmTitle, t.paywall.weeklyFreeConfirmMessage, [
+        {
+          text: t.paywall.weeklyFreeConfirmNoCta,
+          style: "cancel",
+          onPress: () => resolve(false),
+        },
+        {
+          text: t.paywall.weeklyFreeConfirmYesCta,
+          onPress: () => resolve(true),
+        },
+      ]);
+    });
 
   const interpretationsMap = useMemo(() => getNormalizedInterpretations(dream), [dream]);
 
@@ -271,6 +300,13 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
         return;
       }
 
+      if (gate.reason === "free" && gate.freeAccessType === "weekly") {
+        const shouldUseWeeklyFree = await confirmUseWeeklyFreeInterpretation();
+        if (!shouldUseWeeklyFree) {
+          return;
+        }
+      }
+
       setIsInterpretingMethod(method);
       await ensureAnonymousAuth();
       await trackInterpretationStarted({
@@ -354,7 +390,10 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
     if (!trimmed) return;
 
     try {
-      Clipboard.setString(trimmed);
+      const copied = setClipboardText(trimmed);
+      if (!copied) {
+        throw new Error("clipboard_unavailable");
+      }
       Alert.alert("Success", t.dreamSummary.copySuccessMessage);
     } catch {
       Alert.alert("Error", t.dreamSummary.copyErrorMessage);

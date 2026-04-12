@@ -1,6 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Platform } from "react-native";
-import { AppEventsLogger, Settings } from "react-native-fbsdk-next";
+import { NativeModules, Platform } from "react-native";
 import {
   getTrackingStatus,
   requestTrackingPermission,
@@ -13,6 +12,50 @@ export type MetaTrackingParams = Record<string, MetaTrackingParamValue>;
 const META_ATT_PROMPTED_KEY = "meta_att_prompted_before_paywall";
 
 let isMetaSdkInitialized = false;
+let cachedMetaSdk:
+  | {
+      AppEventsLogger: any;
+      Settings: any;
+    }
+  | null
+  | undefined;
+
+function getMetaSdk() {
+  if (cachedMetaSdk !== undefined) {
+    return cachedMetaSdk;
+  }
+
+  // FBSDK package instantiates NativeEventEmitter during import.
+  // Guard first to avoid crashing when native modules are not linked in current iOS binary.
+  if (Platform.OS === "ios") {
+    const requiredNativeModules = ["FBAccessToken", "FBAppEventsLogger", "FBSettings"];
+    const hasAllNativeModules = requiredNativeModules.every(
+      (moduleName) => (NativeModules as Record<string, unknown>)[moduleName] != null
+    );
+    if (!hasAllNativeModules) {
+      cachedMetaSdk = null;
+      return null;
+    }
+  }
+
+  try {
+    // Lazy-load to avoid app crash when native module is unavailable at runtime.
+    const metaSdk = require("react-native-fbsdk-next");
+    if (!metaSdk?.AppEventsLogger || !metaSdk?.Settings) {
+      cachedMetaSdk = null;
+      return null;
+    }
+
+    cachedMetaSdk = {
+      AppEventsLogger: metaSdk.AppEventsLogger,
+      Settings: metaSdk.Settings,
+    };
+    return cachedMetaSdk;
+  } catch {
+    cachedMetaSdk = null;
+    return null;
+  }
+}
 
 function sanitizeParams(params?: MetaTrackingParams): Record<string, string | number> {
   if (!params) return {};
@@ -28,6 +71,10 @@ function sanitizeParams(params?: MetaTrackingParams): Record<string, string | nu
 }
 
 async function applyAdvertiserTrackingFromStatus(status: TrackingStatus): Promise<void> {
+  const metaSdk = getMetaSdk();
+  if (!metaSdk) return;
+
+  const { Settings } = metaSdk;
   const isAuthorized = status === "authorized";
 
   try {
@@ -42,7 +89,14 @@ async function applyAdvertiserTrackingFromStatus(status: TrackingStatus): Promis
 export async function initializeMetaSdk(): Promise<void> {
   if (isMetaSdkInitialized) return;
 
+  const metaSdk = getMetaSdk();
+  if (!metaSdk) {
+    isMetaSdkInitialized = true;
+    return;
+  }
+
   try {
+    const { AppEventsLogger, Settings } = metaSdk;
     // Disable automatic purchase logging; RevenueCat sends subscription revenue events to Meta.
     Settings.setAutoLogAppEventsEnabled(false);
     Settings.initializeSDK();
@@ -63,6 +117,9 @@ export async function initializeMetaSdk(): Promise<void> {
 export async function setMetaUserId(userId: string): Promise<void> {
   try {
     await initializeMetaSdk();
+    const metaSdk = getMetaSdk();
+    if (!metaSdk) return;
+    const { AppEventsLogger } = metaSdk;
     AppEventsLogger.setUserID(userId);
   } catch {
     // Meta attribution should never block analytics or app behavior.
@@ -92,6 +149,9 @@ export async function ensureMetaTrackingConsentBeforePaywall(): Promise<void> {
 export async function getMetaAnonymousId(): Promise<string | null> {
   try {
     await initializeMetaSdk();
+    const metaSdk = getMetaSdk();
+    if (!metaSdk) return null;
+    const { AppEventsLogger } = metaSdk;
     const anonymousId = await AppEventsLogger.getAnonymousID();
     const trimmed = anonymousId?.trim();
     return trimmed ? trimmed : null;
@@ -106,6 +166,9 @@ export async function logMetaFunnelEvent(
 ): Promise<void> {
   try {
     await initializeMetaSdk();
+    const metaSdk = getMetaSdk();
+    if (!metaSdk) return;
+    const { AppEventsLogger } = metaSdk;
 
     const sanitized = sanitizeParams(params);
 
