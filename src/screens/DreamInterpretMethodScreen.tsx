@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -7,6 +7,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { getApp } from "@react-native-firebase/app";
 import { getFunctions, httpsCallable } from "@react-native-firebase/functions";
@@ -23,14 +24,20 @@ import {
   setDefaultInterpretMethod,
   type InterpretMethodKey,
 } from "../services/appPreferences";
-import { canRunAiInterpretation, consumeFreeUseIfNeeded } from "../services/paywallGate";
+import { canRunAiInterpretation, consumeGateUse } from "../services/paywallGate";
 import { refreshMorningReminderSchedule } from "../services/notifications";
 import {
   normalizeTrackingErrorCode,
+  trackRewardedAutoResumeFailed,
+  trackRewardedAutoResumeSucceeded,
   trackInterpretationFailed,
   trackInterpretationStarted,
   trackInterpretationSucceeded,
 } from "../services/tracking";
+import {
+  consumePaywallContinuationRewarded,
+  createPaywallContinuationToken,
+} from "../services/paywallContinuation";
 
 type Props = NativeStackScreenProps<RootStackParamList, "DreamInterpretMethod">;
 
@@ -117,6 +124,7 @@ export function DreamInterpretMethodScreen({ route, navigation }: Props) {
   );
   const [makeDefault, setMakeDefault] = useState(false);
   const [isInterpreting, setIsInterpreting] = useState(false);
+  const [pendingContinuationToken, setPendingContinuationToken] = useState<string | null>(null);
 
   const confirmUseWeeklyFreeInterpretation = () =>
     new Promise<boolean>((resolve) => {
@@ -163,13 +171,18 @@ export function DreamInterpretMethodScreen({ route, navigation }: Props) {
     });
   };
 
-  const onInterpret = async () => {
+  const onInterpret = useCallback(async (options?: { throwOnError?: boolean }) => {
     if (!selectedMethod || isInterpreting) return;
     let didStartInterpretation = false;
     try {
       const gate = await canRunAiInterpretation();
       if (!gate.allowed) {
-        navigation.navigate("Paywall");
+        const continuationToken = createPaywallContinuationToken();
+        setPendingContinuationToken(continuationToken);
+        navigation.navigate("Paywall", {
+          entry: "gate",
+          continuationToken,
+        });
         return;
       }
 
@@ -231,7 +244,7 @@ export function DreamInterpretMethodScreen({ route, navigation }: Props) {
         method: selectedMethod,
         source_screen: "dream_interpret_method",
       });
-      await consumeFreeUseIfNeeded(gate.uid);
+      await consumeGateUse(gate);
       navigateToSummary(record);
     } catch (error: unknown) {
       if (didStartInterpretation && selectedMethod) {
@@ -249,10 +262,65 @@ export function DreamInterpretMethodScreen({ route, navigation }: Props) {
           ? (error as { message: string }).message
           : t.dreamInterpretMethod.error;
       Alert.alert("Error", errorMessage);
+      if (options?.throwOnError) {
+        throw error;
+      }
     } finally {
       setIsInterpreting(false);
     }
-  };
+  }, [
+    confirmUseWeeklyFreeInterpretation,
+    context,
+    dreamDate,
+    dreamText,
+    isInterpreting,
+    makeDefault,
+    moodIcon,
+    moodLabel,
+    navigation,
+    postCreateBackTarget,
+    selectedMethod,
+    selectedMoodId,
+  ]);
+
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
+
+      if (!pendingContinuationToken) {
+        return () => {
+          cancelled = true;
+        };
+      }
+
+      (async () => {
+        const shouldAutoResume = await consumePaywallContinuationRewarded(
+          pendingContinuationToken
+        );
+        setPendingContinuationToken(null);
+
+        if (!shouldAutoResume || cancelled) {
+          return;
+        }
+
+        try {
+          await onInterpret({ throwOnError: true });
+          await trackRewardedAutoResumeSucceeded({
+            source_screen: "dream_interpret_method",
+          });
+        } catch (error) {
+          await trackRewardedAutoResumeFailed({
+            source_screen: "dream_interpret_method",
+            error_code: normalizeTrackingErrorCode(error),
+          });
+        }
+      })();
+
+      return () => {
+        cancelled = true;
+      };
+    }, [onInterpret, pendingContinuationToken])
+  );
 
   return (
     <View className="flex-1 bg-bg-base">

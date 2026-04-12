@@ -1,15 +1,11 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NativeModules, Platform } from "react-native";
 import {
   getTrackingStatus,
-  requestTrackingPermission,
   type TrackingStatus,
 } from "react-native-tracking-transparency";
 
 type MetaTrackingParamValue = string | number | boolean | null | undefined;
 export type MetaTrackingParams = Record<string, MetaTrackingParamValue>;
-
-const META_ATT_PROMPTED_KEY = "meta_att_prompted_before_paywall";
 
 let isMetaSdkInitialized = false;
 let cachedMetaSdk:
@@ -131,15 +127,7 @@ export async function ensureMetaTrackingConsentBeforePaywall(): Promise<void> {
 
   try {
     await initializeMetaSdk();
-
-    const hasPrompted = (await AsyncStorage.getItem(META_ATT_PROMPTED_KEY)) === "true";
-    let status = await getTrackingStatus();
-
-    if (status === "not-determined" && !hasPrompted) {
-      await AsyncStorage.setItem(META_ATT_PROMPTED_KEY, "true");
-      status = await requestTrackingPermission();
-    }
-
+    const status = await getTrackingStatus();
     await applyAdvertiserTrackingFromStatus(status);
   } catch {
     // Never block paywall rendering because of tracking permission state checks.

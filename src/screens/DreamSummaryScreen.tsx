@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -8,6 +8,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { getApp } from "@react-native-firebase/app";
 import { getFunctions, httpsCallable } from "@react-native-firebase/functions";
@@ -25,15 +26,21 @@ import {
   upsertPlaygroundDream,
 } from "../services/playgroundStorage";
 import type { InterpretMethodKey } from "../services/appPreferences";
-import { canRunAiInterpretation, consumeFreeUseIfNeeded } from "../services/paywallGate";
+import { canRunAiInterpretation, consumeGateUse } from "../services/paywallGate";
 import { MoodIcon } from "../components/MoodIcon";
 import { getMoodOptionById, getMoodOptionByTitle } from "../constants/moods";
 import {
   normalizeTrackingErrorCode,
+  trackRewardedAutoResumeFailed,
+  trackRewardedAutoResumeSucceeded,
   trackInterpretationFailed,
   trackInterpretationStarted,
   trackInterpretationSucceeded,
 } from "../services/tracking";
+import {
+  consumePaywallContinuationRewarded,
+  createPaywallContinuationToken,
+} from "../services/paywallContinuation";
 
 type Props = NativeStackScreenProps<RootStackParamList, "DreamSummary">;
 
@@ -151,6 +158,9 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
   const [expandedInterpretation, setExpandedInterpretation] = useState(false);
   const [currentMethod, setCurrentMethod] = useState<InterpretMethodKey | null>(null);
   const [isInterpretingMethod, setIsInterpretingMethod] = useState<InterpretMethodKey | null>(null);
+  const [pendingContinuationToken, setPendingContinuationToken] = useState<string | null>(null);
+  const [pendingContinuationMethod, setPendingContinuationMethod] =
+    useState<InterpretMethodKey | null>(null);
   const confirmUseWeeklyFreeInterpretation = () =>
     new Promise<boolean>((resolve) => {
       Alert.alert(t.paywall.weeklyFreeConfirmTitle, t.paywall.weeklyFreeConfirmMessage, [
@@ -290,14 +300,20 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
 
   const onInterpretWithMethod = async (
     method: InterpretMethodKey,
-    options?: { markRegenerated?: boolean }
+    options?: { markRegenerated?: boolean; throwOnError?: boolean }
   ) => {
     if (isInterpretingMethod) return;
     let didStartInterpretation = false;
     try {
       const gate = await canRunAiInterpretation();
       if (!gate.allowed) {
-        navigation.navigate("Paywall");
+        const continuationToken = createPaywallContinuationToken();
+        setPendingContinuationToken(continuationToken);
+        setPendingContinuationMethod(method);
+        navigation.navigate("Paywall", {
+          entry: "gate",
+          continuationToken,
+        });
         return;
       }
 
@@ -354,7 +370,7 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
         method,
         source_screen: "dream_summary",
       });
-      await consumeFreeUseIfNeeded(gate.uid);
+      await consumeGateUse(gate);
       setDream(updatedDream);
       setCurrentMethod(method);
       setExpandedInterpretation(false);
@@ -381,10 +397,54 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
           ? (error as { message: string }).message
           : "Could not interpret with this method.";
       Alert.alert("Error", errorMessage);
+      if (options?.throwOnError) {
+        throw error;
+      }
     } finally {
       setIsInterpretingMethod(null);
     }
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
+
+      if (!pendingContinuationToken || !pendingContinuationMethod) {
+        return () => {
+          cancelled = true;
+        };
+      }
+
+      (async () => {
+        const shouldAutoResume = await consumePaywallContinuationRewarded(
+          pendingContinuationToken
+        );
+        const methodToResume = pendingContinuationMethod;
+        setPendingContinuationToken(null);
+        setPendingContinuationMethod(null);
+
+        if (!shouldAutoResume || cancelled) {
+          return;
+        }
+
+        try {
+          await onInterpretWithMethod(methodToResume, { throwOnError: true });
+          await trackRewardedAutoResumeSucceeded({
+            source_screen: "dream_summary",
+          });
+        } catch (error) {
+          await trackRewardedAutoResumeFailed({
+            source_screen: "dream_summary",
+            error_code: normalizeTrackingErrorCode(error),
+          });
+        }
+      })();
+
+      return () => {
+        cancelled = true;
+      };
+    }, [pendingContinuationMethod, pendingContinuationToken])
+  );
 
   const copyText = async (value: string) => {
     const trimmed = value.trim();

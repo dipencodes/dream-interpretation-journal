@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -7,6 +7,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { getApp } from "@react-native-firebase/app";
 import { getFunctions, httpsCallable } from "@react-native-firebase/functions";
@@ -22,16 +23,26 @@ import {
   getDefaultInterpretMethod,
   type InterpretMethodKey,
 } from "../services/appPreferences";
-import { canRunAiInterpretation, consumeFreeUseIfNeeded } from "../services/paywallGate";
+import {
+  canRunAiInterpretation,
+  consumeGateUse,
+  type GateAllowedResult,
+} from "../services/paywallGate";
 import { refreshMorningReminderSchedule } from "../services/notifications";
 import {
   normalizeTrackingErrorCode,
+  trackRewardedAutoResumeFailed,
+  trackRewardedAutoResumeSucceeded,
   trackInterpretationFailed,
   trackInterpretationStarted,
   trackInterpretationSucceeded,
 } from "../services/tracking";
 import { MoodIcon } from "../components/MoodIcon";
 import { MOOD_OPTIONS, type MoodId } from "../constants/moods";
+import {
+  consumePaywallContinuationRewarded,
+  createPaywallContinuationToken,
+} from "../services/paywallContinuation";
 
 type Props = NativeStackScreenProps<RootStackParamList, "DreamMood">;
 
@@ -70,6 +81,7 @@ export function DreamMoodScreen({ route, navigation }: Props) {
   const [selectedMoodId, setSelectedMoodId] = useState<MoodId | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isRunningAi, setIsRunningAi] = useState(false);
+  const [pendingContinuationToken, setPendingContinuationToken] = useState<string | null>(null);
 
   const confirmUseWeeklyFreeInterpretation = () =>
     new Promise<boolean>((resolve) => {
@@ -132,7 +144,7 @@ export function DreamMoodScreen({ route, navigation }: Props) {
     });
   };
 
-  const runInterpretation = async (method: InterpretMethodKey, gateUid: string) => {
+  const runInterpretation = async (method: InterpretMethodKey, gate: GateAllowedResult) => {
     await trackInterpretationStarted({ method, source_screen: "dream_mood" });
 
     try {
@@ -168,7 +180,7 @@ export function DreamMoodScreen({ route, navigation }: Props) {
 
       await persistDream(record);
       await trackInterpretationSucceeded({ method, source_screen: "dream_mood" });
-      await consumeFreeUseIfNeeded(gateUid);
+      await consumeGateUse(gate);
       navigateToSummary(record);
     } catch (error: unknown) {
       await trackInterpretationFailed({
@@ -194,12 +206,17 @@ export function DreamMoodScreen({ route, navigation }: Props) {
     }
   };
 
-  const onSaveAndInterpret = async () => {
+  const onSaveAndInterpret = useCallback(async (options?: { throwOnError?: boolean }) => {
     if (!selectedMood || isSaving || isRunningAi) return;
     try {
       const gate = await canRunAiInterpretation();
       if (!gate.allowed) {
-        navigation.navigate("Paywall");
+        const continuationToken = createPaywallContinuationToken();
+        setPendingContinuationToken(continuationToken);
+        navigation.navigate("Paywall", {
+          entry: "gate",
+          continuationToken,
+        });
         return;
       }
 
@@ -225,13 +242,64 @@ export function DreamMoodScreen({ route, navigation }: Props) {
       }
 
       setIsRunningAi(true);
-      await runInterpretation(defaultMethod, gate.uid);
+      await runInterpretation(defaultMethod, gate);
     } catch (error: any) {
       Alert.alert("Error", error?.message ?? t.dreamMood.interpretError);
+      if (options?.throwOnError) {
+        throw error;
+      }
     } finally {
       setIsRunningAi(false);
     }
-  };
+  }, [
+    context,
+    dreamDate,
+    dreamText,
+    isRunningAi,
+    isSaving,
+    navigation,
+    postCreateBackTarget,
+    confirmUseWeeklyFreeInterpretation,
+    runInterpretation,
+    selectedMood,
+  ]);
+
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
+
+      if (!pendingContinuationToken) {
+        return () => {
+          cancelled = true;
+        };
+      }
+
+      (async () => {
+        const shouldAutoResume = await consumePaywallContinuationRewarded(
+          pendingContinuationToken
+        );
+        setPendingContinuationToken(null);
+
+        if (!shouldAutoResume || cancelled) {
+          return;
+        }
+
+        try {
+          await onSaveAndInterpret({ throwOnError: true });
+          await trackRewardedAutoResumeSucceeded({ source_screen: "dream_mood" });
+        } catch (error) {
+          await trackRewardedAutoResumeFailed({
+            source_screen: "dream_mood",
+            error_code: normalizeTrackingErrorCode(error),
+          });
+        }
+      })();
+
+      return () => {
+        cancelled = true;
+      };
+    }, [onSaveAndInterpret, pendingContinuationToken])
+  );
 
   return (
     <View className="flex-1 bg-bg-base">

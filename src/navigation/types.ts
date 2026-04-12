@@ -15,6 +15,7 @@ export type RootStackParamList = {
   Paywall:
     | {
         entry?: "gate" | "direct";
+        continuationToken?: string;
       }
     | undefined;
   DreamInput:

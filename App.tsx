@@ -14,6 +14,7 @@ import { setupNotificationOpenTracking } from "./src/services/notifications";
 import { getMetaAnonymousId, initializeMetaSdk } from "./src/services/metaAttribution";
 import { setTrackingUser } from "./src/services/tracking";
 import { AnimatedSplashScreen } from "./src/components/AnimatedSplashScreen";
+import { initializeAdMobSdk } from "./src/services/adMob";
 
 const SPLASH_LOGO = require("./assets/images/dream.png");
 const MIN_SPLASH_DURATION_MS = 1400;
@@ -61,6 +62,8 @@ export default function App() {
         if (fbAnonymousId) {
           await setRevenueCatFacebookAnonymousId(fbAnonymousId);
         }
+
+        await initializeAdMobSdk();
       } catch {
         // RevenueCat setup can fail locally until SDK keys are configured.
       } finally {

@@ -14,6 +14,7 @@ module.exports = {
     '^@react-native-firebase/firestore/lib/modular$': '<rootDir>/__mocks__/rnFirebaseFirestoreModular.js',
     '^react-native-fbsdk-next$': '<rootDir>/__mocks__/reactNativeFbsdkNext.js',
     '^react-native-tracking-transparency$': '<rootDir>/__mocks__/reactNativeTrackingTransparency.js',
+    '^react-native-google-mobile-ads$': '<rootDir>/__mocks__/reactNativeGoogleMobileAds.js',
     '^react-native-calendars$': '<rootDir>/__mocks__/reactNativeCalendars.js',
     '^react-native-purchases$': '<rootDir>/__mocks__/reactNativePurchases.js',
     '^react-native-purchases-ui$': '<rootDir>/__mocks__/reactNativePurchasesUI.js',
