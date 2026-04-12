@@ -13,9 +13,11 @@ import {
 } from "../services/revenuecat";
 import {
   trackPaywallClosed,
+  trackPaywallCheckoutStarted,
   trackPaywallViewed,
   trackSubscriptionPurchaseSuccess,
 } from "../services/tracking";
+import { ensureMetaTrackingConsentBeforePaywall } from "../services/metaAttribution";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Paywall">;
 
@@ -29,6 +31,9 @@ export function PaywallScreen({ navigation, route }: Props) {
     setLoadError(null);
 
     try {
+      await ensureMetaTrackingConsentBeforePaywall();
+      await trackPaywallCheckoutStarted();
+
       const { uid } = await ensureAnonymousAuth();
       await syncRevenueCatUser(uid);
 
@@ -135,6 +140,14 @@ export function PaywallScreen({ navigation, route }: Props) {
             <Text className="mt-3 text-text-secondary text-[15px] leading-6">
               {t.paywall.subtitle}
             </Text>
+            <View className="mt-4 rounded-2xl border border-brand-primary/35 bg-brand-primary/10 px-4 py-3">
+              <Text className="text-brand-copper text-sm font-semibold">
+                {t.paywall.weeklyFreeBannerTitle}
+              </Text>
+              <Text className="mt-1 text-text-secondary text-sm leading-5">
+                {t.paywall.weeklyFreeBannerSubtitle}
+              </Text>
+            </View>
           </>
         ) : null}
 

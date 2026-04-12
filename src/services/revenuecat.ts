@@ -145,6 +145,15 @@ export async function openSubscriptionManagement(): Promise<void> {
   await RevenueCatUI.presentCustomerCenter();
 }
 
+export async function setRevenueCatFacebookAnonymousId(
+  fbAnonymousId: string
+): Promise<void> {
+  await configureRevenueCat();
+  await Purchases.setAttributes({
+    $fbAnonId: fbAnonymousId,
+  });
+}
+
 export async function getActiveSubscriptionPlanInterval(): Promise<SubscriptionPlanInterval> {
   const { uid } = await ensureAnonymousAuth();
   await syncRevenueCatUser(uid);

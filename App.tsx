@@ -5,8 +5,13 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { RootNavigator } from "./src/navigation/RootNavigator";
 import type { RootStackParamList } from "./src/navigation/types";
 import { ensureAnonymousAuth } from "./src/services/auth";
-import { configureRevenueCat, syncRevenueCatUser } from "./src/services/revenuecat";
+import {
+  configureRevenueCat,
+  setRevenueCatFacebookAnonymousId,
+  syncRevenueCatUser,
+} from "./src/services/revenuecat";
 import { setupNotificationOpenTracking } from "./src/services/notifications";
+import { getMetaAnonymousId, initializeMetaSdk } from "./src/services/metaAttribution";
 import { setTrackingUser } from "./src/services/tracking";
 import { AnimatedSplashScreen } from "./src/components/AnimatedSplashScreen";
 
@@ -48,8 +53,14 @@ export default function App() {
       try {
         const { uid } = await ensureAnonymousAuth();
         await setTrackingUser(uid);
+        await initializeMetaSdk();
         await configureRevenueCat();
         await syncRevenueCatUser(uid);
+
+        const fbAnonymousId = await getMetaAnonymousId();
+        if (fbAnonymousId) {
+          await setRevenueCatFacebookAnonymousId(fbAnonymousId);
+        }
       } catch {
         // RevenueCat setup can fail locally until SDK keys are configured.
       } finally {

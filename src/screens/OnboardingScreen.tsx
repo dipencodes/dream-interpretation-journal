@@ -105,6 +105,11 @@ export function OnboardingScreen({ navigation }: Props) {
           <Text className="text-text-secondary mt-3 text-center text-base leading-6">
             {t.onboarding.subtitle}
           </Text>
+          <View className="mt-4 self-center rounded-full border border-brand-primary/40 bg-brand-primary/10 px-4 py-2">
+            <Text className="text-brand-copper text-xs font-semibold tracking-wide">
+              {t.onboarding.freeWeeklyBadge}
+            </Text>
+          </View>
         </View>
 
         <View className="flex-1 justify-end">

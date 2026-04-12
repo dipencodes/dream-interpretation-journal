@@ -71,6 +71,21 @@ export function DreamMoodScreen({ route, navigation }: Props) {
   const [isSaving, setIsSaving] = useState(false);
   const [isRunningAi, setIsRunningAi] = useState(false);
 
+  const confirmUseWeeklyFreeInterpretation = () =>
+    new Promise<boolean>((resolve) => {
+      Alert.alert(t.paywall.weeklyFreeConfirmTitle, t.paywall.weeklyFreeConfirmMessage, [
+        {
+          text: t.paywall.weeklyFreeConfirmNoCta,
+          style: "cancel",
+          onPress: () => resolve(false),
+        },
+        {
+          text: t.paywall.weeklyFreeConfirmYesCta,
+          onPress: () => resolve(true),
+        },
+      ]);
+    });
+
   const selectedMood = useMemo(
     () => MOOD_OPTIONS.find((mood) => mood.id === selectedMoodId) ?? null,
     [selectedMoodId]
@@ -201,6 +216,14 @@ export function DreamMoodScreen({ route, navigation }: Props) {
         });
         return;
       }
+
+      if (gate.reason === "free" && gate.freeAccessType === "weekly") {
+        const shouldUseWeeklyFree = await confirmUseWeeklyFreeInterpretation();
+        if (!shouldUseWeeklyFree) {
+          return;
+        }
+      }
+
       setIsRunningAi(true);
       await runInterpretation(defaultMethod, gate.uid);
     } catch (error: any) {
