@@ -179,10 +179,10 @@ export const en = {
       "New here? You get 2 free to start, then 1 free every week.",
     weeklyFreeUsedTitle: "Weekly free interpretation used",
     weeklyFreeUsedMessage:
-      "You used your free interpretation for this week. Your next free interpretation unlocks next week.",
+      "You used your free interpretation for this week. Your next free interpretation unlocks next week or unlock using our ad reward.",
     weeklyFreeConfirmTitle: "Use this week's free interpretation?",
     weeklyFreeConfirmMessage:
-      "This will use your 1 free interpretation for this week. Continue?",
+      "This will use your free interpretation credit for this week. Continue?",
     weeklyFreeConfirmYesCta: "Use it",
     weeklyFreeConfirmNoCta: "Not now",
     planWeekly: "Weekly",
