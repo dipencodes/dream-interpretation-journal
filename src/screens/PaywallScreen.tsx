@@ -55,6 +55,37 @@ function formatResetTime(unixMs: number): string {
   }
 }
 
+function formatResetLabel(unixMs: number): string {
+  try {
+    const now = new Date();
+    const resetDate = new Date(unixMs);
+
+    const nowDayStartMs = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate()
+    ).getTime();
+    const resetDayStartMs = new Date(
+      resetDate.getFullYear(),
+      resetDate.getMonth(),
+      resetDate.getDate()
+    ).getTime();
+    const dayDiff = Math.round((resetDayStartMs - nowDayStartMs) / (24 * 60 * 60 * 1000));
+
+    if (dayDiff === 0) {
+      return t.paywall.rewardedResetsTodayAtLabel;
+    }
+
+    if (dayDiff === 1) {
+      return t.paywall.rewardedResetsTomorrowAtLabel;
+    }
+
+    return t.paywall.rewardedResetsAtLabel;
+  } catch {
+    return t.paywall.rewardedResetsAtLabel;
+  }
+}
+
 function loadRewardedAd(ad: ReturnType<typeof RewardedAd.createForAdRequest>): Promise<void> {
   return new Promise((resolve, reject) => {
     const unsubscribeLoaded = ad.addAdEventListener(RewardedAdEventType.LOADED, () => {
@@ -150,6 +181,18 @@ export function PaywallScreen({ navigation, route }: Props) {
     }
   }, [isDirectEntry]);
 
+  const onBackFromRewardEntry = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+      return;
+    }
+
+    navigation.reset({
+      index: 0,
+      routes: [{ name: "Home" }],
+    });
+  };
+
   const presentRevenueCatPaywall = useCallback(async () => {
     setIsPresentingPremium(true);
     setPremiumError(null);
@@ -241,7 +284,7 @@ export function PaywallScreen({ navigation, route }: Props) {
       if (status.remainingDailyRewarded <= 0) {
         await trackRewardedAdCapReached({ resets_at_unix_ms: status.rewardedResetsAt });
         setRewardError(
-          `${t.paywall.rewardedCapReachedMessage} ${t.paywall.rewardedResetsAtLabel} ${formatResetTime(
+          `${t.paywall.rewardedCapReachedMessage} ${formatResetLabel(status.rewardedResetsAt)} ${formatResetTime(
             status.rewardedResetsAt
           )}.`
         );
@@ -274,7 +317,7 @@ export function PaywallScreen({ navigation, route }: Props) {
             resets_at_unix_ms: rewardGrantResult.resetsAt,
           });
           setRewardError(
-            `${t.paywall.rewardedCapReachedMessage} ${t.paywall.rewardedResetsAtLabel} ${formatResetTime(
+            `${t.paywall.rewardedCapReachedMessage} ${formatResetLabel(rewardGrantResult.resetsAt)} ${formatResetTime(
               rewardGrantResult.resetsAt
             )}.`
           );
@@ -372,6 +415,17 @@ export function PaywallScreen({ navigation, route }: Props) {
       <View className="flex-1 px-6 pt-14">
         {!isDirectEntry ? (
           <>
+            {isRewardEntry ? (
+              <Pressable
+                onPress={onBackFromRewardEntry}
+                className="self-start rounded-full border border-border-default bg-bg-surface px-4 py-2 active:opacity-90"
+              >
+                <Text className="text-text-secondary text-sm font-semibold">
+                  ‹ {t.paywall.backCta}
+                </Text>
+              </Pressable>
+            ) : null}
+
             <Text className="mt-5 text-text-primary text-4xl font-semibold">
               {isRewardEntry ? t.paywall.rewardEntryTitle : t.paywall.title}
             </Text>
@@ -442,15 +496,17 @@ export function PaywallScreen({ navigation, route }: Props) {
               </Pressable>
             ) : null}
 
-            <Pressable
-              onPress={() => navigation.goBack()}
-              className="mt-4 items-center rounded-full border border-border-default bg-bg-surface px-5 py-3 active:opacity-90"
-              disabled={isPresentingPremium || isRewarding}
-            >
-              <Text className="text-text-secondary text-sm font-semibold">
-                {t.paywall.keepUsingFreeCta}
-              </Text>
-            </Pressable>
+            {!isRewardEntry ? (
+              <Pressable
+                onPress={() => navigation.goBack()}
+                className="mt-4 items-center rounded-full border border-border-default bg-bg-surface px-5 py-3 active:opacity-90"
+                disabled={isPresentingPremium || isRewarding}
+              >
+                <Text className="text-text-secondary text-sm font-semibold">
+                  {t.paywall.keepUsingFreeCta}
+                </Text>
+              </Pressable>
+            ) : null}
           </>
         ) : null}
 
@@ -471,7 +527,7 @@ export function PaywallScreen({ navigation, route }: Props) {
 
         {!isDirectEntry && rewardResetsAt && rewardRemainingToday === 0 ? (
           <Text className="mt-4 text-text-secondary text-xs">
-            {t.paywall.rewardedResetsAtLabel} {formatResetTime(rewardResetsAt)}
+            {formatResetLabel(rewardResetsAt)} {formatResetTime(rewardResetsAt)}
           </Text>
         ) : null}
       </View>

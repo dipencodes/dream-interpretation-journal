@@ -179,9 +179,11 @@ describe("PaywallScreen credit display", () => {
     await flushAsync();
 
     expect(hasText(renderer!.root, "Earn free credits")).toBe(true);
+    expect(hasText(renderer!.root, "Back")).toBe(true);
     expect(hasText(renderer!.root, "Total free credits available: 5")).toBe(true);
     expect(hasText(renderer!.root, "Ad credits left today: 2")).toBe(true);
     expect(hasText(renderer!.root, "Explore Premium")).toBe(false);
+    expect(hasText(renderer!.root, "Keep using free Version")).toBe(false);
   });
 
   it("shows same total credit values in gate mode and keeps premium CTA", async () => {
