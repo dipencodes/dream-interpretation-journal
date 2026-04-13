@@ -226,5 +226,20 @@ export const en = {
     restoreNoActiveSubMessage: "No active subscription was found to restore.",
   },
 
+  reviewPrompt: {
+    resonanceTitle: "Quick feedback",
+    resonanceMessage: "Does this dream meaning resonate and make sense?",
+    yesCta: "Yes",
+    noCta: "No",
+    reviewTitle: "Help us grow",
+    reviewMessage:
+      "Positive reviews help us grow and help us reach more curious dreams.",
+    leaveReviewCta: "Leave a review",
+    notNowCta: "Not now",
+    feedbackTitle: "We’d love your feedback",
+    feedbackMessage:
+      "Thank you for sharing. Please send your feedback to splitpatron@gmail.com",
+  },
+
   common: {},
 } as const;

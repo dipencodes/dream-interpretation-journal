@@ -67,7 +67,7 @@ export async function saveDream(record: DreamRecord) {
   dreams.unshift(record); // newest first
 
   await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(dreams));
-  await setHasCompletedOnboarding(true);
+  await setHasCompletedOnboarding(true, record.createdAt);
   await trackDreamSaved({
     has_interpretation: Boolean(record.interpretation),
     source_key: record.sourceKey || "unknown",

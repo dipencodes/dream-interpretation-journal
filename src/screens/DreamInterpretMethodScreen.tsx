@@ -155,9 +155,16 @@ export function DreamInterpretMethodScreen({ route, navigation }: Props) {
     });
   };
 
-  const navigateToSummary = (record: DreamRecord) => {
+  const navigateToSummary = (
+    record: DreamRecord,
+    options?: { promptReviewAfterSuccess?: boolean }
+  ) => {
     if (!postCreateBackTarget) {
-      navigation.navigate("DreamSummary", { dream: record, context });
+      navigation.navigate("DreamSummary", {
+        dream: record,
+        context,
+        promptReviewAfterSuccess: options?.promptReviewAfterSuccess,
+      });
       return;
     }
 
@@ -166,7 +173,14 @@ export function DreamInterpretMethodScreen({ route, navigation }: Props) {
       index: 1,
       routes: [
         { name: targetRouteName },
-        { name: "DreamSummary", params: { dream: record, context } },
+        {
+          name: "DreamSummary",
+          params: {
+            dream: record,
+            context,
+            promptReviewAfterSuccess: options?.promptReviewAfterSuccess,
+          },
+        },
       ],
     });
   };
@@ -245,7 +259,7 @@ export function DreamInterpretMethodScreen({ route, navigation }: Props) {
         source_screen: "dream_interpret_method",
       });
       await consumeGateUse(gate);
-      navigateToSummary(record);
+      navigateToSummary(record, { promptReviewAfterSuccess: true });
     } catch (error: unknown) {
       if (didStartInterpretation && selectedMethod) {
         await trackInterpretationFailed({

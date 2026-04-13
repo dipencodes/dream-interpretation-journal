@@ -43,5 +43,6 @@ export type RootStackParamList = {
   DreamSummary: {
     dream: DreamRecord;
     context?: DreamFlowContext;
+    promptReviewAfterSuccess?: boolean;
   };
 };

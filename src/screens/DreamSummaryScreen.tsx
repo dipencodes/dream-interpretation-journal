@@ -37,6 +37,7 @@ import {
   trackInterpretationStarted,
   trackInterpretationSucceeded,
 } from "../services/tracking";
+import { maybePromptReviewAfterInterpretation } from "../services/reviewPrompt";
 import {
   consumePaywallContinuationRewarded,
   createPaywallContinuationToken,
@@ -381,6 +382,7 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
           return next;
         });
       }
+      await maybePromptReviewAfterInterpretation();
     } catch (error: unknown) {
       if (didStartInterpretation) {
         await trackInterpretationFailed({
@@ -404,6 +406,19 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
       setIsInterpretingMethod(null);
     }
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!route.params.promptReviewAfterSuccess) {
+        return;
+      }
+
+      navigation.setParams({ promptReviewAfterSuccess: false });
+      maybePromptReviewAfterInterpretation().catch(() => {
+        // Keep interpretation flow resilient if review prompt cannot be shown.
+      });
+    }, [navigation, route.params.promptReviewAfterSuccess])
+  );
 
   useFocusEffect(
     useCallback(() => {

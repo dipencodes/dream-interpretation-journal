@@ -39,7 +39,22 @@ export function RootNavigator() {
           const dreams = await getDreams();
           if (dreams.length > 0) {
             resolvedCompleted = true;
-            await setHasCompletedOnboarding(true);
+            const earliestCreatedAt = dreams.reduce<number | null>((earliest, dream) => {
+              if (
+                typeof dream.createdAt !== "number" ||
+                !Number.isFinite(dream.createdAt) ||
+                dream.createdAt <= 0
+              ) {
+                return earliest;
+              }
+
+              if (earliest === null || dream.createdAt < earliest) {
+                return dream.createdAt;
+              }
+
+              return earliest;
+            }, null);
+            await setHasCompletedOnboarding(true, earliestCreatedAt);
           }
         }
 
