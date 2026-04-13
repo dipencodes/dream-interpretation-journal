@@ -23,6 +23,7 @@ export type TrackingEventName =
   | "rewarded_ad_show_succeeded"
   | "rewarded_ad_show_failed"
   | "rewarded_ad_reward_earned"
+  | "rewarded_credit_granted"
   | "rewarded_ad_cap_reached"
   | "rewarded_auto_resume_succeeded"
   | "rewarded_auto_resume_failed"
@@ -59,7 +60,11 @@ const metaTrackingProvider: TrackingProvider = {
   },
 
   async logEvent(name: TrackingEventName, params?: TrackingParams): Promise<void> {
-    if (name !== "paywall_viewed" && name !== "paywall_checkout_started") {
+    if (
+      name !== "paywall_viewed" &&
+      name !== "paywall_checkout_started" &&
+      name !== "rewarded_credit_granted"
+    ) {
       return;
     }
 
@@ -194,6 +199,13 @@ export async function trackRewardedAdShowFailed(params: {
 
 export async function trackRewardedAdRewardEarned(): Promise<void> {
   await safeLogEvent("rewarded_ad_reward_earned");
+}
+
+export async function trackRewardedCreditGranted(params: {
+  entry: "gate" | "reward" | "unknown";
+  remaining_daily_rewarded: number;
+}): Promise<void> {
+  await safeLogEvent("rewarded_credit_granted", params);
 }
 
 export async function trackRewardedAdCapReached(params: {

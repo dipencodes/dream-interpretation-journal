@@ -18,7 +18,7 @@ import {
   syncRevenueCatUser,
 } from "../services/revenuecat";
 import {
-  getRewardedAdAvailability,
+  getFreeCreditStatus,
   grantRewardedCredit,
 } from "../services/paywallGate";
 import {
@@ -30,6 +30,7 @@ import {
   trackRewardedAdCapReached,
   trackRewardedAdLoadFailed,
   trackRewardedAdLoadSucceeded,
+  trackRewardedCreditGranted,
   trackRewardedAdRewardEarned,
   trackRewardedAdShowFailed,
   trackRewardedAdShowSucceeded,
@@ -113,25 +114,39 @@ function showRewardedAdAndWaitForOutcome(
 
 export function PaywallScreen({ navigation, route }: Props) {
   const isDirectEntry = route.params?.entry === "direct";
+  const isRewardEntry = route.params?.entry === "reward";
+  const rewardTrackingEntry: "gate" | "reward" | "unknown" =
+    route.params?.entry === "reward"
+      ? "reward"
+      : route.params?.entry === "gate"
+        ? "gate"
+        : "unknown";
   const continuationToken = route.params?.continuationToken;
 
   const [isPresentingPremium, setIsPresentingPremium] = useState(isDirectEntry);
   const [isRewarding, setIsRewarding] = useState(false);
   const [premiumError, setPremiumError] = useState<string | null>(null);
   const [rewardError, setRewardError] = useState<string | null>(null);
+  const [isPremiumUser, setIsPremiumUser] = useState(false);
+  const [totalFreeCredits, setTotalFreeCredits] = useState<number | null>(null);
   const [rewardRemainingToday, setRewardRemainingToday] = useState<number | null>(null);
   const [rewardResetsAt, setRewardResetsAt] = useState<number | null>(null);
 
-  const refreshRewardAvailability = useCallback(async () => {
+  const refreshFreeCreditStatus = useCallback(async () => {
     if (isDirectEntry) return;
 
     try {
       const { uid } = await ensureAnonymousAuth();
-      const availability = await getRewardedAdAvailability(uid);
-      setRewardRemainingToday(availability.remainingDaily);
-      setRewardResetsAt(availability.resetsAt);
+      const status = await getFreeCreditStatus(uid);
+      setIsPremiumUser(status.isPremium);
+      setTotalFreeCredits(status.totalFreeCreditsAvailable);
+      setRewardRemainingToday(status.remainingDailyRewarded);
+      setRewardResetsAt(status.rewardedResetsAt);
     } catch {
+      setIsPremiumUser(false);
+      setTotalFreeCredits(null);
       setRewardRemainingToday(null);
+      setRewardResetsAt(null);
     }
   }, [isDirectEntry]);
 
@@ -217,15 +232,17 @@ export function PaywallScreen({ navigation, route }: Props) {
       const { uid } = await ensureAnonymousAuth();
       await initializeAdMobSdk();
 
-      const availability = await getRewardedAdAvailability(uid);
-      setRewardRemainingToday(availability.remainingDaily);
-      setRewardResetsAt(availability.resetsAt);
+      const status = await getFreeCreditStatus(uid);
+      setIsPremiumUser(status.isPremium);
+      setTotalFreeCredits(status.totalFreeCreditsAvailable);
+      setRewardRemainingToday(status.remainingDailyRewarded);
+      setRewardResetsAt(status.rewardedResetsAt);
 
-      if (!availability.canWatchAd) {
-        await trackRewardedAdCapReached({ resets_at_unix_ms: availability.resetsAt });
+      if (status.remainingDailyRewarded <= 0) {
+        await trackRewardedAdCapReached({ resets_at_unix_ms: status.rewardedResetsAt });
         setRewardError(
           `${t.paywall.rewardedCapReachedMessage} ${t.paywall.rewardedResetsAtLabel} ${formatResetTime(
-            availability.resetsAt
+            status.rewardedResetsAt
           )}.`
         );
         return;
@@ -269,6 +286,10 @@ export function PaywallScreen({ navigation, route }: Props) {
       }
 
       await trackRewardedAdRewardEarned();
+      await trackRewardedCreditGranted({
+        entry: rewardTrackingEntry,
+        remaining_daily_rewarded: rewardGrantResult.remainingDaily,
+      });
       setRewardRemainingToday(rewardGrantResult.remainingDaily);
 
       if (continuationToken) {
@@ -293,7 +314,7 @@ export function PaywallScreen({ navigation, route }: Props) {
       setRewardError(t.paywall.rewardedLoadError);
     } finally {
       setIsRewarding(false);
-      await refreshRewardAvailability();
+      await refreshFreeCreditStatus();
     }
   }, [
     continuationToken,
@@ -301,7 +322,8 @@ export function PaywallScreen({ navigation, route }: Props) {
     isPresentingPremium,
     isRewarding,
     navigation,
-    refreshRewardAvailability,
+    rewardTrackingEntry,
+    refreshFreeCreditStatus,
   ]);
 
   useFocusEffect(
@@ -314,8 +336,8 @@ export function PaywallScreen({ navigation, route }: Props) {
       }
 
       trackPaywallRewardedOptionViewed();
-      refreshRewardAvailability();
-    }, [isDirectEntry, presentRevenueCatPaywall, refreshRewardAvailability])
+      refreshFreeCreditStatus();
+    }, [isDirectEntry, presentRevenueCatPaywall, refreshFreeCreditStatus])
   );
 
   return (
@@ -350,18 +372,22 @@ export function PaywallScreen({ navigation, route }: Props) {
       <View className="flex-1 px-6 pt-14">
         {!isDirectEntry ? (
           <>
-            <Text className="mt-5 text-text-primary text-4xl font-semibold">{t.paywall.title}</Text>
-            <Text className="mt-3 text-text-secondary text-[15px] leading-6">
-              {t.paywall.subtitle}
+            <Text className="mt-5 text-text-primary text-4xl font-semibold">
+              {isRewardEntry ? t.paywall.rewardEntryTitle : t.paywall.title}
             </Text>
-            <View className="mt-4 rounded-2xl border border-brand-primary/35 bg-brand-primary/10 px-4 py-3">
-              <Text className="text-brand-copper text-sm font-semibold">
-                {t.paywall.weeklyFreeBannerTitle}
-              </Text>
-              <Text className="mt-1 text-text-secondary text-sm leading-5">
-                {t.paywall.weeklyFreeBannerSubtitle}
-              </Text>
-            </View>
+            <Text className="mt-3 text-text-secondary text-[15px] leading-6">
+              {isRewardEntry ? t.paywall.rewardEntrySubtitle : t.paywall.subtitle}
+            </Text>
+            {!isRewardEntry ? (
+              <View className="mt-4 rounded-2xl border border-brand-primary/35 bg-brand-primary/10 px-4 py-3">
+                <Text className="text-brand-copper text-sm font-semibold">
+                  {t.paywall.weeklyFreeBannerTitle}
+                </Text>
+                <Text className="mt-1 text-text-secondary text-sm leading-5">
+                  {t.paywall.weeklyFreeBannerSubtitle}
+                </Text>
+              </View>
+            ) : null}
           </>
         ) : null}
 
@@ -388,24 +414,33 @@ export function PaywallScreen({ navigation, route }: Props) {
               </Text>
             </Pressable>
 
-            {rewardRemainingToday !== null ? (
+            {totalFreeCredits !== null ? (
               <Text className="mt-2 text-text-secondary text-xs">
-                {t.paywall.rewardedRemainingLabel} {rewardRemainingToday}
+                {t.paywall.totalFreeCreditsLabel}{" "}
+                {isPremiumUser ? t.settings.creditsUnlimited : totalFreeCredits}
               </Text>
             ) : null}
 
-            <Pressable
-              onPress={presentRevenueCatPaywall}
-              disabled={isPresentingPremium || isRewarding}
-              className={[
-                "mt-4 items-center rounded-full bg-brand-primary px-5 py-3 active:opacity-90",
-                isPresentingPremium || isRewarding ? "opacity-70" : "",
-              ].join(" ")}
-            >
-              <Text className="text-text-inverse text-base font-semibold">
-                {t.paywall.explorePremiumCta}
+            {rewardRemainingToday !== null ? (
+              <Text className="mt-2 text-text-secondary text-xs">
+                {t.paywall.dailyRewardedRemainingLabel} {rewardRemainingToday}
               </Text>
-            </Pressable>
+            ) : null}
+
+            {!isRewardEntry ? (
+              <Pressable
+                onPress={presentRevenueCatPaywall}
+                disabled={isPresentingPremium || isRewarding}
+                className={[
+                  "mt-4 items-center rounded-full bg-brand-primary px-5 py-3 active:opacity-90",
+                  isPresentingPremium || isRewarding ? "opacity-70" : "",
+                ].join(" ")}
+              >
+                <Text className="text-text-inverse text-base font-semibold">
+                  {t.paywall.explorePremiumCta}
+                </Text>
+              </Pressable>
+            ) : null}
 
             <Pressable
               onPress={() => navigation.goBack()}

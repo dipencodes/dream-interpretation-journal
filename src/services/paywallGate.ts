@@ -34,6 +34,13 @@ export type GrantRewardedCreditResult =
   | { granted: false; reason: "daily_cap_reached"; remainingDaily: number; resetsAt: number }
   | { granted: false; reason: "premium" };
 
+export type FreeCreditStatus = {
+  isPremium: boolean;
+  totalFreeCreditsAvailable: number;
+  remainingDailyRewarded: number;
+  rewardedResetsAt: number;
+};
+
 async function isPremiumForUid(uid: string): Promise<boolean> {
   await syncRevenueCatUser(uid);
   return getIsPremium();
@@ -218,6 +225,37 @@ export async function getRewardedAdAvailability(uid: string): Promise<RewardedAv
   }
 
   return { canWatchAd: true, remainingDaily, resetsAt };
+}
+
+export async function getFreeCreditStatus(uid: string): Promise<FreeCreditStatus> {
+  let isPremium = false;
+
+  try {
+    isPremium = await isPremiumForUid(uid);
+  } catch {
+    // Continue with local gate state if RevenueCat is unavailable.
+  }
+
+  const gate = await getOrCreateUserGate(uid);
+  const effectiveGate = getEffectiveGateState(gate, Date.now());
+  await persistEffectiveGateStateIfNeeded(uid, effectiveGate);
+
+  const onboardingAvailable = effectiveGate.onboardingFreeUsed ? 0 : 1;
+  const weeklyAvailable = effectiveGate.weeklyUsesCount < WEEKLY_FREE_LIMIT ? 1 : 0;
+  const totalFreeCreditsAvailable =
+    onboardingAvailable + weeklyAvailable + effectiveGate.rewardedCredits;
+  const remainingDailyRewarded = Math.max(
+    0,
+    REWARDED_DAILY_LIMIT - effectiveGate.rewardedDailyCount
+  );
+  const rewardedResetsAt = effectiveGate.rewardedWindowStartedAt + REWARDED_WINDOW_MS;
+
+  return {
+    isPremium,
+    totalFreeCreditsAvailable,
+    remainingDailyRewarded,
+    rewardedResetsAt,
+  };
 }
 
 export async function grantRewardedCredit(uid: string): Promise<GrantRewardedCreditResult> {

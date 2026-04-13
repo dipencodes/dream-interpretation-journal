@@ -139,6 +139,11 @@ export const en = {
     interpretationMenuSubtitle: "Set your default AI interpretation method.",
     notificationsTitle: "Notifications",
     notificationsMenuSubtitle: "Enable reminders and choose morning time.",
+    creditsTitle: "Free Credits",
+    creditsSubtitle: "Total free credits available.",
+    creditsDailyRemainingLabel: "Ad credits left today:",
+    creditsUnlimited: "Unlimited",
+    addFreeCreditCta: "Add Free Credit",
     premiumTitle: "Get Premium",
     premiumSubtitle: "Unlock unlimited AI interpretations.",
     subscriptionTitle: "Subscription",
@@ -174,6 +179,9 @@ export const en = {
     title: "Unlock unlimited AI interpretations",
     subtitle:
       "You have used this week's free interpretation. Subscribe for unlimited access, or come back next week for your next free one.",
+    rewardEntryTitle: "Earn free credits",
+    rewardEntrySubtitle:
+      "Watch an ad to add 1 free interpretation credit. You can earn up to 3 ad credits per day.",
     weeklyFreeBannerTitle: "You still get 1 free interpretation every week",
     weeklyFreeBannerSubtitle:
       "New here? You get 2 free to start, then 1 free every week.",
@@ -191,9 +199,11 @@ export const en = {
     subscribeCta: "Continue",
     restoreCta: "Restore purchases",
     explorePremiumCta: "Explore Premium",
+    totalFreeCreditsLabel: "Total free credits available:",
     watchRewardCta: "Watch ad for 1 free interpretation",
     watchRewardLoadingCta: "Loading reward ad...",
     rewardedRemainingLabel: "Rewarded unlocks left today:",
+    dailyRewardedRemainingLabel: "Ad credits left today:",
     rewardedCapReachedMessage: "You have reached today's rewarded unlock limit.",
     rewardedResetsAtLabel: "Resets at",
     rewardedNotEarnedMessage: "Reward not earned. Please finish the ad to unlock 1 interpretation.",

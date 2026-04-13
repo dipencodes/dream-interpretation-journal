@@ -149,7 +149,7 @@ export async function getMetaAnonymousId(): Promise<string | null> {
 }
 
 export async function logMetaFunnelEvent(
-  name: "paywall_viewed" | "paywall_checkout_started",
+  name: "paywall_viewed" | "paywall_checkout_started" | "rewarded_credit_granted",
   params?: MetaTrackingParams
 ): Promise<void> {
   try {
@@ -173,6 +173,11 @@ export async function logMetaFunnelEvent(
         content_type: "subscription",
         ...sanitized,
       });
+      return;
+    }
+
+    if (name === "rewarded_credit_granted") {
+      AppEventsLogger.logEvent("rewarded_credit_granted", sanitized);
     }
   } catch {
     // Meta attribution should never block analytics flow.
