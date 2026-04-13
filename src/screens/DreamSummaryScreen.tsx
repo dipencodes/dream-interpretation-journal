@@ -339,6 +339,7 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
         dreamText: dream.dreamText,
         dreamDate: dream.dreamDate,
         sourceKey: method,
+        forceRefresh: options?.markRegenerated === true,
       });
       const data = result.data as {
         summary?: string | null;
