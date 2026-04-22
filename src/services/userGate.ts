@@ -12,6 +12,7 @@ import {
 export type UserGate = {
   uid: string;
   onboardingFreeUsed: boolean;
+  onboardingFallbackUsed: boolean;
   weeklyUsesCount: number;
   weeklyWindowStartedAt: number | null;
   rewardedCredits: number;
@@ -22,6 +23,7 @@ export type UserGate = {
 type UserGateDoc = {
   freeUsed?: boolean;
   onboardingFreeUsed?: boolean;
+  onboardingFallbackUsed?: boolean;
   weeklyUsesCount?: number;
   weeklyWindowStartedAt?: number;
   rewardedCredits?: number;
@@ -58,6 +60,7 @@ function normalizeUserGate(uid: string, data?: UserGateDoc): UserGate {
       typeof data?.onboardingFreeUsed === "boolean"
         ? data.onboardingFreeUsed
         : Boolean(data?.freeUsed),
+    onboardingFallbackUsed: Boolean(data?.onboardingFallbackUsed),
     weeklyUsesCount: normalizeWeeklyUsesCount(data?.weeklyUsesCount),
     weeklyWindowStartedAt: normalizeWeeklyWindowStartedAt(data?.weeklyWindowStartedAt),
     rewardedCredits: normalizeRewardedCredits(data?.rewardedCredits),
@@ -75,6 +78,7 @@ export async function getOrCreateUserGate(uid: string): Promise<UserGate> {
     const defaultGate: UserGate = {
       uid,
       onboardingFreeUsed: false,
+      onboardingFallbackUsed: false,
       weeklyUsesCount: 0,
       weeklyWindowStartedAt: null,
       rewardedCredits: 0,
@@ -86,6 +90,7 @@ export async function getOrCreateUserGate(uid: string): Promise<UserGate> {
       userRef,
       {
         onboardingFreeUsed: defaultGate.onboardingFreeUsed,
+        onboardingFallbackUsed: defaultGate.onboardingFallbackUsed,
         weeklyUsesCount: defaultGate.weeklyUsesCount,
         weeklyWindowStartedAt: defaultGate.weeklyWindowStartedAt,
         rewardedCredits: defaultGate.rewardedCredits,
@@ -108,6 +113,7 @@ export async function setUserGateState(
     Pick<
       UserGate,
       | "onboardingFreeUsed"
+      | "onboardingFallbackUsed"
       | "weeklyUsesCount"
       | "weeklyWindowStartedAt"
       | "rewardedCredits"

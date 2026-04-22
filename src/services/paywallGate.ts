@@ -3,16 +3,14 @@ import { getIsPremium, syncRevenueCatUser } from "./revenuecat";
 import { getOrCreateUserGate, setUserGateState, type UserGate } from "./userGate";
 
 type GateBlockedReason = "blocked";
-type FreeAccessType = "onboarding" | "weekly";
 
-const WEEKLY_FREE_LIMIT = 1;
-const WEEKLY_FREE_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
 const REWARDED_DAILY_LIMIT = 3;
 const REWARDED_WINDOW_MS = 24 * 60 * 60 * 1000;
+const UNAVAILABLE_AD_FALLBACK_WEEKLY_LIMIT = 1;
+const UNAVAILABLE_AD_FALLBACK_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
 
 export type GateCheckResult =
   | { allowed: true; reason: "premium"; uid: string }
-  | { allowed: true; reason: "free"; freeAccessType: FreeAccessType; uid: string }
   | { allowed: true; reason: "rewarded"; uid: string }
   | { allowed: false; reason: GateBlockedReason; uid: string };
 
@@ -20,19 +18,30 @@ export type GateAllowedResult = Extract<GateCheckResult, { allowed: true }>;
 
 export type GateUseConsumptionResult =
   | { kind: "premium" }
-  | { kind: "onboarding_free" }
-  | { kind: "weekly_free" }
   | { kind: "rewarded_credit" }
   | { kind: "none" };
 
 export type RewardedAvailabilityResult =
-  | { canWatchAd: true; remainingDaily: number; resetsAt: number }
-  | { canWatchAd: false; remainingDaily: 0; resetsAt: number };
+  | {
+      canWatchAd: true;
+      remainingDaily: number;
+      resetsAt: number;
+    }
+  | {
+      canWatchAd: false;
+      remainingDaily: 0;
+      resetsAt: number;
+      reason: "daily_cap_reached";
+    };
 
 export type GrantRewardedCreditResult =
   | { granted: true; rewardedCredits: number; remainingDaily: number }
   | { granted: false; reason: "daily_cap_reached"; remainingDaily: number; resetsAt: number }
   | { granted: false; reason: "premium" };
+
+export type GrantUnavailableAdFallbackCreditResult =
+  | { granted: true; rewardedCredits: number; nextEligibleAt: number }
+  | { granted: false; reason: "premium" | "weekly_cap_reached"; nextEligibleAt: number };
 
 export type FreeCreditStatus = {
   isPremium: boolean;
@@ -47,7 +56,6 @@ async function isPremiumForUid(uid: string): Promise<boolean> {
 }
 
 type EffectiveGateState = {
-  onboardingFreeUsed: boolean;
   weeklyUsesCount: number;
   weeklyWindowStartedAt: number;
   rewardedCredits: number;
@@ -78,7 +86,8 @@ function getEffectiveGateState(gate: UserGate, nowMs: number): EffectiveGateStat
   let changed = !hasValidWeeklyWindowStart || !hasValidRewardedWindowStart;
 
   const weeklyElapsedMs = nowMs - weeklyWindowStartedAt;
-  const shouldResetWeeklyWindow = weeklyElapsedMs >= WEEKLY_FREE_WINDOW_MS || weeklyElapsedMs < 0;
+  const shouldResetWeeklyWindow =
+    weeklyElapsedMs >= UNAVAILABLE_AD_FALLBACK_WINDOW_MS || weeklyElapsedMs < 0;
   if (shouldResetWeeklyWindow) {
     weeklyWindowStartedAt = nowMs;
     weeklyUsesCount = 0;
@@ -93,15 +102,26 @@ function getEffectiveGateState(gate: UserGate, nowMs: number): EffectiveGateStat
     changed = true;
   }
 
+  if (!Number.isFinite(weeklyUsesCount) || weeklyUsesCount < 0) {
+    weeklyUsesCount = 0;
+    changed = true;
+  }
+
+  if (!Number.isFinite(rewardedDailyCount) || rewardedDailyCount < 0) {
+    rewardedDailyCount = 0;
+    changed = true;
+  }
+
   if (!Number.isFinite(rewardedCredits) || rewardedCredits < 0) {
     rewardedCredits = 0;
     changed = true;
   }
 
+  weeklyUsesCount = Math.floor(weeklyUsesCount);
+  rewardedDailyCount = Math.floor(rewardedDailyCount);
   rewardedCredits = Math.floor(rewardedCredits);
 
   return {
-    onboardingFreeUsed: gate.onboardingFreeUsed,
     weeklyUsesCount,
     weeklyWindowStartedAt,
     rewardedCredits,
@@ -118,7 +138,6 @@ async function persistEffectiveGateStateIfNeeded(
   if (!effectiveGate.changed) return;
 
   await setUserGateState(uid, {
-    onboardingFreeUsed: effectiveGate.onboardingFreeUsed,
     weeklyUsesCount: effectiveGate.weeklyUsesCount,
     weeklyWindowStartedAt: effectiveGate.weeklyWindowStartedAt,
     rewardedCredits: effectiveGate.rewardedCredits,
@@ -143,14 +162,6 @@ export async function canRunAiInterpretation(): Promise<GateCheckResult> {
   const effectiveGate = getEffectiveGateState(gate, Date.now());
   await persistEffectiveGateStateIfNeeded(uid, effectiveGate);
 
-  if (!effectiveGate.onboardingFreeUsed) {
-    return { allowed: true, reason: "free", freeAccessType: "onboarding", uid };
-  }
-
-  if (effectiveGate.weeklyUsesCount < WEEKLY_FREE_LIMIT) {
-    return { allowed: true, reason: "free", freeAccessType: "weekly", uid };
-  }
-
   if (effectiveGate.rewardedCredits > 0) {
     return { allowed: true, reason: "rewarded", uid };
   }
@@ -173,29 +184,6 @@ export async function consumeGateUse(gate: GateAllowedResult): Promise<GateUseCo
   const currentGate = await getOrCreateUserGate(uid);
   const effectiveGate = getEffectiveGateState(currentGate, Date.now());
   await persistEffectiveGateStateIfNeeded(uid, effectiveGate);
-
-  if (gate.reason === "free" && gate.freeAccessType === "onboarding") {
-    if (!effectiveGate.onboardingFreeUsed) {
-      await setUserGateState(uid, {
-        onboardingFreeUsed: true,
-        weeklyUsesCount: effectiveGate.weeklyUsesCount,
-        weeklyWindowStartedAt: effectiveGate.weeklyWindowStartedAt,
-      });
-      return { kind: "onboarding_free" };
-    }
-    return { kind: "none" };
-  }
-
-  if (gate.reason === "free" && gate.freeAccessType === "weekly") {
-    if (effectiveGate.weeklyUsesCount < WEEKLY_FREE_LIMIT) {
-      await setUserGateState(uid, {
-        weeklyUsesCount: effectiveGate.weeklyUsesCount + 1,
-        weeklyWindowStartedAt: effectiveGate.weeklyWindowStartedAt,
-      });
-      return { kind: "weekly_free" };
-    }
-    return { kind: "none" };
-  }
 
   if (gate.reason === "rewarded") {
     if (effectiveGate.rewardedCredits > 0) {
@@ -221,7 +209,12 @@ export async function getRewardedAdAvailability(uid: string): Promise<RewardedAv
   const resetsAt = effectiveGate.rewardedWindowStartedAt + REWARDED_WINDOW_MS;
 
   if (remainingDaily <= 0) {
-    return { canWatchAd: false, remainingDaily: 0, resetsAt };
+    return {
+      canWatchAd: false,
+      remainingDaily: 0,
+      resetsAt,
+      reason: "daily_cap_reached",
+    };
   }
 
   return { canWatchAd: true, remainingDaily, resetsAt };
@@ -240,10 +233,7 @@ export async function getFreeCreditStatus(uid: string): Promise<FreeCreditStatus
   const effectiveGate = getEffectiveGateState(gate, Date.now());
   await persistEffectiveGateStateIfNeeded(uid, effectiveGate);
 
-  const onboardingAvailable = effectiveGate.onboardingFreeUsed ? 0 : 1;
-  const weeklyAvailable = effectiveGate.weeklyUsesCount < WEEKLY_FREE_LIMIT ? 1 : 0;
-  const totalFreeCreditsAvailable =
-    onboardingAvailable + weeklyAvailable + effectiveGate.rewardedCredits;
+  const totalFreeCreditsAvailable = effectiveGate.rewardedCredits;
   const remainingDailyRewarded = Math.max(
     0,
     REWARDED_DAILY_LIMIT - effectiveGate.rewardedDailyCount
@@ -295,5 +285,52 @@ export async function grantRewardedCredit(uid: string): Promise<GrantRewardedCre
     granted: true,
     rewardedCredits: nextRewardedCredits,
     remainingDaily,
+  };
+}
+
+export async function grantUnavailableAdFallbackCredit(
+  uid: string
+): Promise<GrantUnavailableAdFallbackCreditResult> {
+  try {
+    const isPremium = await isPremiumForUid(uid);
+    if (isPremium) {
+      return {
+        granted: false,
+        reason: "premium",
+        nextEligibleAt: Date.now(),
+      };
+    }
+  } catch {
+    // Continue with local gate update.
+  }
+
+  const gate = await getOrCreateUserGate(uid);
+  const effectiveGate = getEffectiveGateState(gate, Date.now());
+  await persistEffectiveGateStateIfNeeded(uid, effectiveGate);
+
+  const nextEligibleAt = effectiveGate.weeklyWindowStartedAt + UNAVAILABLE_AD_FALLBACK_WINDOW_MS;
+
+  if (effectiveGate.weeklyUsesCount >= UNAVAILABLE_AD_FALLBACK_WEEKLY_LIMIT) {
+    return {
+      granted: false,
+      reason: "weekly_cap_reached",
+      nextEligibleAt,
+    };
+  }
+
+  const nextRewardedCredits = effectiveGate.rewardedCredits + 1;
+
+  await setUserGateState(uid, {
+    weeklyUsesCount: effectiveGate.weeklyUsesCount + 1,
+    weeklyWindowStartedAt: effectiveGate.weeklyWindowStartedAt,
+    rewardedCredits: nextRewardedCredits,
+    rewardedDailyCount: effectiveGate.rewardedDailyCount,
+    rewardedWindowStartedAt: effectiveGate.rewardedWindowStartedAt,
+  });
+
+  return {
+    granted: true,
+    rewardedCredits: nextRewardedCredits,
+    nextEligibleAt,
   };
 }

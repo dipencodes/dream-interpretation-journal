@@ -162,20 +162,6 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
   const [pendingContinuationToken, setPendingContinuationToken] = useState<string | null>(null);
   const [pendingContinuationMethod, setPendingContinuationMethod] =
     useState<InterpretMethodKey | null>(null);
-  const confirmUseWeeklyFreeInterpretation = () =>
-    new Promise<boolean>((resolve) => {
-      Alert.alert(t.paywall.weeklyFreeConfirmTitle, t.paywall.weeklyFreeConfirmMessage, [
-        {
-          text: t.paywall.weeklyFreeConfirmNoCta,
-          style: "cancel",
-          onPress: () => resolve(false),
-        },
-        {
-          text: t.paywall.weeklyFreeConfirmYesCta,
-          onPress: () => resolve(true),
-        },
-      ]);
-    });
 
   const interpretationsMap = useMemo(() => getNormalizedInterpretations(dream), [dream]);
 
@@ -316,13 +302,6 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
           continuationToken,
         });
         return;
-      }
-
-      if (gate.reason === "free" && gate.freeAccessType === "weekly") {
-        const shouldUseWeeklyFree = await confirmUseWeeklyFreeInterpretation();
-        if (!shouldUseWeeklyFree) {
-          return;
-        }
       }
 
       setIsInterpretingMethod(method);

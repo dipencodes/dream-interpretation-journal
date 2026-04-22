@@ -2,8 +2,8 @@ export const en = {
   onboarding: {
     title: "Every Dream has a meaning! Find yours'",
     subtitle:
-      "Start with 2 free interpretations, then get 1 free interpretation every week.",
-    freeWeeklyBadge: "1 Free Interpretation Every Week",
+      "Interpret your dreams using AI trained on different religions, cultures, and philosophies.",
+    freeWeeklyBadge: "Meaningful interpretations for every dream",
     cta: "Start Interpreting your Dreams",
   },
 
@@ -140,7 +140,7 @@ export const en = {
     notificationsTitle: "Notifications",
     notificationsMenuSubtitle: "Enable reminders and choose morning time.",
     creditsTitle: "Free Credits",
-    creditsSubtitle: "Total free credits available.",
+    creditsSubtitle: "Total interpretation credits available.",
     creditsDailyRemainingLabel: "Ad credits left today:",
     creditsUnlimited: "Unlimited",
     addFreeCreditCta: "Add Free Credit",
@@ -178,19 +178,19 @@ export const en = {
   paywall: {
     title: "Unlock unlimited AI interpretations",
     subtitle:
-      "You have used this week's free interpretation. Subscribe for unlimited access, or come back next week for your next free one.",
+      "Watch small ad for free interpretations, or subscribe for premium access.",
     rewardEntryTitle: "Earn free credits",
     rewardEntrySubtitle:
       "Watch an ad to add 1 free interpretation credit. You can earn up to 3 ad credits per day.",
-    weeklyFreeBannerTitle: "You still get 1 free interpretation every week",
+    weeklyFreeBannerTitle: "Free access uses ad-earned credits",
     weeklyFreeBannerSubtitle:
-      "New here? You get 2 free to start, then 1 free every week.",
-    weeklyFreeUsedTitle: "Weekly free interpretation used",
+      "Earn up to 3 ad credits daily.",
+    weeklyFreeUsedTitle: "No free credits left",
     weeklyFreeUsedMessage:
-      "You used your free interpretation for this week. Your next free interpretation unlocks next week or unlock using our ad reward.",
-    weeklyFreeConfirmTitle: "Use this week's free interpretation?",
+      "Watch an ad to earn a free credit, or subscribe for unlimited interpretations.",
+    weeklyFreeConfirmTitle: "Use your available free credit?",
     weeklyFreeConfirmMessage:
-      "This will use your free interpretation credit for this week. Continue?",
+      "This will use one free interpretation credit. Continue?",
     weeklyFreeConfirmYesCta: "Use it",
     weeklyFreeConfirmNoCta: "Not now",
     planWeekly: "Weekly",
@@ -211,7 +211,13 @@ export const en = {
     rewardedNotEarnedMessage: "Reward not earned. Please finish the ad to unlock 1 interpretation.",
     rewardedLoadError: "Could not load a rewarded ad right now. Please try again.",
     rewardedGrantError: "Could not grant your rewarded interpretation. Please try again.",
-    keepUsingFreeCta: "Keep using free Version",
+    unavailableAdFallbackHint:
+      "Ad unavailable right now. You can use 1 fallback free interpretation per week.",
+    unavailableAdFallbackCta: "Use weekly fallback free credit",
+    unavailableAdFallbackLoadingCta: "Applying fallback credit...",
+    unavailableAdFallbackWeeklyCapMessage: "Weekly fallback free credit already used.",
+    unavailableAdFallbackNextEligibleLabel: "Next available on",
+    keepUsingFreeCta: "Skip interpretation and Keep using free Version",
     backCta: "Back",
     retryCta: "Retry",
     notNowCta: "Not now",

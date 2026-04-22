@@ -3,7 +3,11 @@ import ReactTestRenderer, { act } from "react-test-renderer";
 import { AdEventType, RewardedAd, RewardedAdEventType } from "react-native-google-mobile-ads";
 import { PaywallScreen } from "../src/screens/PaywallScreen";
 import { ensureAnonymousAuth } from "../src/services/auth";
-import { getFreeCreditStatus, grantRewardedCredit } from "../src/services/paywallGate";
+import {
+  getFreeCreditStatus,
+  grantRewardedCredit,
+  grantUnavailableAdFallbackCredit,
+} from "../src/services/paywallGate";
 import { trackRewardedCreditGranted } from "../src/services/tracking";
 
 jest.mock("../src/services/auth", () => ({
@@ -13,6 +17,7 @@ jest.mock("../src/services/auth", () => ({
 jest.mock("../src/services/paywallGate", () => ({
   getFreeCreditStatus: jest.fn(),
   grantRewardedCredit: jest.fn(),
+  grantUnavailableAdFallbackCredit: jest.fn(),
 }));
 
 jest.mock("../src/services/revenuecat", () => ({
@@ -55,6 +60,8 @@ const mockGetFreeCreditStatus = getFreeCreditStatus as jest.MockedFunction<typeo
 const mockGrantRewardedCredit = grantRewardedCredit as jest.MockedFunction<
   typeof grantRewardedCredit
 >;
+const mockGrantUnavailableAdFallbackCredit =
+  grantUnavailableAdFallbackCredit as jest.MockedFunction<typeof grantUnavailableAdFallbackCredit>;
 const mockTrackRewardedCreditGranted = trackRewardedCreditGranted as jest.MockedFunction<
   typeof trackRewardedCreditGranted
 >;
@@ -124,6 +131,30 @@ function createRewardedAdMock(options: { earnReward: boolean }) {
   };
 }
 
+function createRewardedAdLoadErrorMock() {
+  const listeners = new Map<string, Set<(payload?: unknown) => void>>();
+
+  const emit = (eventType: string, payload?: unknown) => {
+    const eventListeners = listeners.get(eventType);
+    if (!eventListeners) return;
+    eventListeners.forEach((listener) => listener(payload));
+  };
+
+  return {
+    addAdEventListener: (eventType: string, listener: (payload?: unknown) => void) => {
+      if (!listeners.has(eventType)) {
+        listeners.set(eventType, new Set());
+      }
+      listeners.get(eventType)?.add(listener);
+      return () => listeners.get(eventType)?.delete(listener);
+    },
+    load: () => {
+      emit(AdEventType.ERROR, new Error("rewarded_load_failed"));
+    },
+    show: async () => {},
+  };
+}
+
 async function flushAsync() {
   await act(async () => {
     await Promise.resolve();
@@ -145,6 +176,11 @@ describe("PaywallScreen credit display", () => {
       totalFreeCreditsAvailable: 5,
       remainingDailyRewarded: 2,
       rewardedResetsAt: Date.UTC(2026, 3, 13, 12, 0, 0),
+    });
+    mockGrantUnavailableAdFallbackCredit.mockResolvedValue({
+      granted: true,
+      rewardedCredits: 6,
+      nextEligibleAt: Date.UTC(2026, 3, 19, 12, 0, 0),
     });
     mockGrantRewardedCredit.mockResolvedValue({
       granted: true,
@@ -295,5 +331,50 @@ describe("PaywallScreen credit display", () => {
 
     expect(mockTrackRewardedCreditGranted).not.toHaveBeenCalled();
     expect(mockGrantRewardedCredit).toHaveBeenCalledTimes(1);
+  });
+
+  it("offers weekly fallback after rewarded ad load failure in gate flow", async () => {
+    (RewardedAd.createForAdRequest as jest.Mock).mockImplementation(
+      () => createRewardedAdLoadErrorMock() as any
+    );
+
+    const navigation = {
+      navigate: jest.fn(),
+      goBack: jest.fn(),
+      canGoBack: jest.fn(() => true),
+      reset: jest.fn(),
+    };
+    const route = {
+      key: "paywall-gate-fallback",
+      name: "Paywall",
+      params: { entry: "gate", continuationToken: "ct1" },
+    };
+
+    let renderer: ReactTestRenderer.ReactTestRenderer;
+    await act(async () => {
+      renderer = ReactTestRenderer.create(
+        <PaywallScreen navigation={navigation as any} route={route as any} />
+      );
+    });
+    await flushAsync();
+
+    const watchButton = findPressableByText(renderer!.root, "Watch ad for 1 free interpretation");
+    await act(async () => {
+      watchButton.props.onPress();
+      await Promise.resolve();
+    });
+    await flushAsync();
+
+    expect(hasText(renderer!.root, "Use weekly fallback free credit")).toBe(true);
+
+    const fallbackButton = findPressableByText(renderer!.root, "Use weekly fallback free credit");
+    await act(async () => {
+      fallbackButton.props.onPress();
+      await Promise.resolve();
+    });
+    await flushAsync();
+
+    expect(mockGrantUnavailableAdFallbackCredit).toHaveBeenCalledWith("u1");
+    expect(navigation.goBack).toHaveBeenCalled();
   });
 });

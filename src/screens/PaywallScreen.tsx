@@ -19,6 +19,7 @@ import {
 } from "../services/revenuecat";
 import {
   getFreeCreditStatus,
+  grantUnavailableAdFallbackCredit,
   grantRewardedCredit,
 } from "../services/paywallGate";
 import {
@@ -86,6 +87,19 @@ function formatResetLabel(unixMs: number): string {
   }
 }
 
+function formatDateTime(unixMs: number): string {
+  try {
+    return new Date(unixMs).toLocaleString([], {
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  } catch {
+    return "";
+  }
+}
+
 function loadRewardedAd(ad: ReturnType<typeof RewardedAd.createForAdRequest>): Promise<void> {
   return new Promise((resolve, reject) => {
     const unsubscribeLoaded = ad.addAdEventListener(RewardedAdEventType.LOADED, () => {
@@ -146,6 +160,7 @@ function showRewardedAdAndWaitForOutcome(
 export function PaywallScreen({ navigation, route }: Props) {
   const isDirectEntry = route.params?.entry === "direct";
   const isRewardEntry = route.params?.entry === "reward";
+  const isGateEntry = route.params?.entry === "gate";
   const rewardTrackingEntry: "gate" | "reward" | "unknown" =
     route.params?.entry === "reward"
       ? "reward"
@@ -162,6 +177,8 @@ export function PaywallScreen({ navigation, route }: Props) {
   const [totalFreeCredits, setTotalFreeCredits] = useState<number | null>(null);
   const [rewardRemainingToday, setRewardRemainingToday] = useState<number | null>(null);
   const [rewardResetsAt, setRewardResetsAt] = useState<number | null>(null);
+  const [showUnavailableAdFallback, setShowUnavailableAdFallback] = useState(false);
+  const [isGrantingFallback, setIsGrantingFallback] = useState(false);
 
   const refreshFreeCreditStatus = useCallback(async () => {
     if (isDirectEntry) return;
@@ -263,13 +280,15 @@ export function PaywallScreen({ navigation, route }: Props) {
   }, [isDirectEntry, navigation]);
 
   const onWatchRewardedAd = useCallback(async () => {
-    if (isDirectEntry || isRewarding || isPresentingPremium) return;
+    if (isDirectEntry || isRewarding || isPresentingPremium || isGrantingFallback) return;
 
     setIsRewarding(true);
     setRewardError(null);
+    setShowUnavailableAdFallback(false);
 
     let didLoad = false;
     let didShow = false;
+    let didAttemptAdLoad = false;
 
     try {
       const { uid } = await ensureAnonymousAuth();
@@ -291,6 +310,7 @@ export function PaywallScreen({ navigation, route }: Props) {
         return;
       }
 
+      didAttemptAdLoad = true;
       const rewardedAd = RewardedAd.createForAdRequest(getRewardedAdUnitId());
       await loadRewardedAd(rewardedAd);
       didLoad = true;
@@ -355,6 +375,9 @@ export function PaywallScreen({ navigation, route }: Props) {
         await trackRewardedAdShowFailed({ error_code: errorCode });
       }
       setRewardError(t.paywall.rewardedLoadError);
+      if (isGateEntry && didAttemptAdLoad) {
+        setShowUnavailableAdFallback(true);
+      }
     } finally {
       setIsRewarding(false);
       await refreshFreeCreditStatus();
@@ -362,10 +385,73 @@ export function PaywallScreen({ navigation, route }: Props) {
   }, [
     continuationToken,
     isDirectEntry,
+    isGrantingFallback,
+    isGateEntry,
     isPresentingPremium,
     isRewarding,
     navigation,
     rewardTrackingEntry,
+    refreshFreeCreditStatus,
+  ]);
+
+  const onUseUnavailableAdFallback = useCallback(async () => {
+    if (
+      isDirectEntry ||
+      !isGateEntry ||
+      isGrantingFallback ||
+      isPresentingPremium ||
+      isRewarding
+    ) {
+      return;
+    }
+
+    setIsGrantingFallback(true);
+    setRewardError(null);
+
+    try {
+      const { uid } = await ensureAnonymousAuth();
+      const fallbackResult = await grantUnavailableAdFallbackCredit(uid);
+
+      if (!fallbackResult.granted) {
+        if (fallbackResult.reason === "weekly_cap_reached") {
+          setRewardError(
+            `${t.paywall.unavailableAdFallbackWeeklyCapMessage} ${t.paywall.unavailableAdFallbackNextEligibleLabel} ${formatDateTime(
+              fallbackResult.nextEligibleAt
+            )}.`
+          );
+        } else {
+          setRewardError(t.paywall.rewardedGrantError);
+        }
+        setShowUnavailableAdFallback(false);
+        return;
+      }
+
+      if (continuationToken) {
+        await markPaywallContinuationRewarded(continuationToken);
+      }
+
+      if (navigation.canGoBack()) {
+        navigation.goBack();
+      } else {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "Home" }],
+        });
+      }
+    } catch {
+      setRewardError(t.paywall.rewardedGrantError);
+    } finally {
+      setIsGrantingFallback(false);
+      await refreshFreeCreditStatus();
+    }
+  }, [
+    continuationToken,
+    isDirectEntry,
+    isGateEntry,
+    isGrantingFallback,
+    isPresentingPremium,
+    isRewarding,
+    navigation,
     refreshFreeCreditStatus,
   ]);
 
@@ -432,16 +518,6 @@ export function PaywallScreen({ navigation, route }: Props) {
             <Text className="mt-3 text-text-secondary text-[15px] leading-6">
               {isRewardEntry ? t.paywall.rewardEntrySubtitle : t.paywall.subtitle}
             </Text>
-            {!isRewardEntry ? (
-              <View className="mt-4 rounded-2xl border border-brand-primary/35 bg-brand-primary/10 px-4 py-3">
-                <Text className="text-brand-copper text-sm font-semibold">
-                  {t.paywall.weeklyFreeBannerTitle}
-                </Text>
-                <Text className="mt-1 text-text-secondary text-sm leading-5">
-                  {t.paywall.weeklyFreeBannerSubtitle}
-                </Text>
-              </View>
-            ) : null}
           </>
         ) : null}
 
@@ -457,10 +533,10 @@ export function PaywallScreen({ navigation, route }: Props) {
           <>
             <Pressable
               onPress={onWatchRewardedAd}
-              disabled={isRewarding || isPresentingPremium}
+              disabled={isRewarding || isPresentingPremium || isGrantingFallback}
               className={[
                 "mt-7 items-center rounded-full border border-brand-primary bg-bg-surface px-5 py-3 active:opacity-90",
-                isRewarding || isPresentingPremium ? "opacity-70" : "",
+                isRewarding || isPresentingPremium || isGrantingFallback ? "opacity-70" : "",
               ].join(" ")}
             >
               <Text className="text-brand-copper text-base font-semibold">
@@ -484,10 +560,10 @@ export function PaywallScreen({ navigation, route }: Props) {
             {!isRewardEntry ? (
               <Pressable
                 onPress={presentRevenueCatPaywall}
-                disabled={isPresentingPremium || isRewarding}
+                disabled={isPresentingPremium || isRewarding || isGrantingFallback}
                 className={[
                   "mt-4 items-center rounded-full bg-brand-primary px-5 py-3 active:opacity-90",
-                  isPresentingPremium || isRewarding ? "opacity-70" : "",
+                  isPresentingPremium || isRewarding || isGrantingFallback ? "opacity-70" : "",
                 ].join(" ")}
               >
                 <Text className="text-text-inverse text-base font-semibold">
@@ -500,12 +576,34 @@ export function PaywallScreen({ navigation, route }: Props) {
               <Pressable
                 onPress={() => navigation.goBack()}
                 className="mt-4 items-center rounded-full border border-border-default bg-bg-surface px-5 py-3 active:opacity-90"
-                disabled={isPresentingPremium || isRewarding}
+                disabled={isPresentingPremium || isRewarding || isGrantingFallback}
               >
                 <Text className="text-text-secondary text-sm font-semibold">
                   {t.paywall.keepUsingFreeCta}
                 </Text>
               </Pressable>
+            ) : null}
+
+            {showUnavailableAdFallback ? (
+              <View className="mt-4 rounded-2xl border border-border-subtle bg-bg-surface px-4 py-3">
+                <Text className="text-text-secondary text-sm leading-6">
+                  {t.paywall.unavailableAdFallbackHint}
+                </Text>
+                <Pressable
+                  onPress={onUseUnavailableAdFallback}
+                  disabled={isGrantingFallback || isPresentingPremium || isRewarding}
+                  className={[
+                    "mt-3 self-start rounded-full border border-brand-primary bg-bg-surface px-4 py-2 active:opacity-90",
+                    isGrantingFallback || isPresentingPremium || isRewarding ? "opacity-70" : "",
+                  ].join(" ")}
+                >
+                  <Text className="text-brand-copper text-sm font-semibold">
+                    {isGrantingFallback
+                      ? t.paywall.unavailableAdFallbackLoadingCta
+                      : t.paywall.unavailableAdFallbackCta}
+                  </Text>
+                </Pressable>
+              </View>
             ) : null}
           </>
         ) : null}
