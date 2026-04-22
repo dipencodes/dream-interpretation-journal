@@ -1,4 +1,9 @@
 {
   "name": "DreamInterpretationJournal",
-  "displayName": "DreamInterpretationJournal"
+  "displayName": "DreamInterpretationJournal",
+  "react-native-google-mobile-ads": {
+    "android_app_id": "ca-app-pub-3070466523357671~2297930275",
+    "ios_app_id": "ca-app-pub-3070466523357671~9469631256",
+    "delay_app_measurement_init": true
+  }
 }

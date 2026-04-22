@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Modal,
   Pressable,
@@ -13,7 +14,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { Calendar, type DateData } from "react-native-calendars";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/types";
-import { getDreams, type DreamRecord } from "../services/dreamStorage";
+import { deleteDream, getDreams, type DreamRecord } from "../services/dreamStorage";
 import { t } from "../i18n";
 import { BottomTabDock } from "../components/BottomTabDock";
 
@@ -143,14 +144,15 @@ function buildYearRange(dreams: DreamRecord[]): number[] {
 function DreamListItem({
   dream,
   onPress,
+  onDelete,
 }: {
   dream: DreamRecord;
   onPress: () => void;
+  onDelete: () => void;
 }) {
   return (
-    <Pressable
-      onPress={onPress}
-      className="mt-3 rounded-3xl border border-border-subtle bg-bg-surface p-5 active:opacity-90"
+    <View
+      className="mt-3 rounded-3xl border border-border-subtle bg-bg-surface p-5"
       style={{
         shadowColor: "#000",
         shadowOpacity: 0.06,
@@ -159,14 +161,26 @@ function DreamListItem({
         elevation: 3,
       }}
     >
-      <Text className="text-text-secondary text-sm">{dream.dreamDate}</Text>
-      <Text className="text-text-primary mt-2 text-base font-semibold">
-        {dream.dreamText.slice(0, 90)}
-      </Text>
-      <Text className="text-text-secondary mt-2 text-sm">
-        {dream.interpretation?.slice(0, 100) ?? ""}
-      </Text>
-    </Pressable>
+      <View className="flex-row items-center justify-between">
+        <Text className="text-text-secondary text-sm">{dream.dreamDate}</Text>
+        <Pressable
+          onPress={onDelete}
+          className="rounded-full border border-red-200 bg-red-50 px-3 py-1 active:opacity-90"
+        >
+          <Text className="text-red-600 text-xs font-semibold">
+            {t.journal.deleteCta}
+          </Text>
+        </Pressable>
+      </View>
+      <Pressable onPress={onPress} className="active:opacity-90">
+        <Text className="text-text-primary mt-2 text-base font-semibold">
+          {dream.dreamText.slice(0, 90)}
+        </Text>
+        <Text className="text-text-secondary mt-2 text-sm">
+          {dream.interpretation?.slice(0, 100) ?? ""}
+        </Text>
+      </Pressable>
+    </View>
   );
 }
 
@@ -295,6 +309,27 @@ export function JournalScreen({ navigation }: Props) {
     );
   };
 
+  const onDeleteDream = (dream: DreamRecord) => {
+    Alert.alert(t.journal.deleteConfirmTitle, t.journal.deleteConfirmMessage, [
+      {
+        text: t.journal.deleteCancelAction,
+        style: "cancel",
+      },
+      {
+        text: t.journal.deleteConfirmAction,
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await deleteDream(dream.id);
+            setAllDreams((prev) => prev.filter((item) => item.id !== dream.id));
+          } catch {
+            Alert.alert("Error", t.journal.deleteError);
+          }
+        },
+      },
+    ]);
+  };
+
   return (
     <View className="flex-1 bg-bg-base">
       <View pointerEvents="none" className="absolute inset-0">
@@ -386,6 +421,7 @@ export function JournalScreen({ navigation }: Props) {
             <DreamListItem
               dream={item}
               onPress={() => navigation.navigate("DreamSummary", { dream: item })}
+              onDelete={() => onDeleteDream(item)}
             />
           )}
           onEndReached={onLoadMore}
@@ -407,6 +443,7 @@ export function JournalScreen({ navigation }: Props) {
             <DreamListItem
               dream={item}
               onPress={() => navigation.navigate("DreamSummary", { dream: item })}
+              onDelete={() => onDeleteDream(item)}
             />
           )}
           ListHeaderComponent={

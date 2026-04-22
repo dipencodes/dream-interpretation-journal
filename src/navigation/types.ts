@@ -14,7 +14,8 @@ export type RootStackParamList = {
   NotificationSettings: undefined;
   Paywall:
     | {
-        entry?: "gate" | "direct";
+        entry?: "gate" | "direct" | "reward";
+        continuationToken?: string;
       }
     | undefined;
   DreamInput:
@@ -42,5 +43,6 @@ export type RootStackParamList = {
   DreamSummary: {
     dream: DreamRecord;
     context?: DreamFlowContext;
+    promptReviewAfterSuccess?: boolean;
   };
 };

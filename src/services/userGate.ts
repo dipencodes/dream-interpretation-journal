@@ -14,6 +14,9 @@ export type UserGate = {
   onboardingFreeUsed: boolean;
   weeklyUsesCount: number;
   weeklyWindowStartedAt: number | null;
+  rewardedCredits: number;
+  rewardedDailyCount: number;
+  rewardedWindowStartedAt: number | null;
 };
 
 type UserGateDoc = {
@@ -21,6 +24,9 @@ type UserGateDoc = {
   onboardingFreeUsed?: boolean;
   weeklyUsesCount?: number;
   weeklyWindowStartedAt?: number;
+  rewardedCredits?: number;
+  rewardedDailyCount?: number;
+  rewardedWindowStartedAt?: number;
 };
 
 function normalizeWeeklyUsesCount(value: unknown): number {
@@ -37,6 +43,13 @@ function normalizeWeeklyWindowStartedAt(value: unknown): number | null {
   return value;
 }
 
+function normalizeRewardedCredits(value: unknown): number {
+  if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
+    return 0;
+  }
+  return Math.floor(value);
+}
+
 function normalizeUserGate(uid: string, data?: UserGateDoc): UserGate {
   return {
     uid,
@@ -47,6 +60,9 @@ function normalizeUserGate(uid: string, data?: UserGateDoc): UserGate {
         : Boolean(data?.freeUsed),
     weeklyUsesCount: normalizeWeeklyUsesCount(data?.weeklyUsesCount),
     weeklyWindowStartedAt: normalizeWeeklyWindowStartedAt(data?.weeklyWindowStartedAt),
+    rewardedCredits: normalizeRewardedCredits(data?.rewardedCredits),
+    rewardedDailyCount: normalizeWeeklyUsesCount(data?.rewardedDailyCount),
+    rewardedWindowStartedAt: normalizeWeeklyWindowStartedAt(data?.rewardedWindowStartedAt),
   };
 }
 
@@ -61,6 +77,9 @@ export async function getOrCreateUserGate(uid: string): Promise<UserGate> {
       onboardingFreeUsed: false,
       weeklyUsesCount: 0,
       weeklyWindowStartedAt: null,
+      rewardedCredits: 0,
+      rewardedDailyCount: 0,
+      rewardedWindowStartedAt: null,
     };
 
     await setDoc(
@@ -69,6 +88,9 @@ export async function getOrCreateUserGate(uid: string): Promise<UserGate> {
         onboardingFreeUsed: defaultGate.onboardingFreeUsed,
         weeklyUsesCount: defaultGate.weeklyUsesCount,
         weeklyWindowStartedAt: defaultGate.weeklyWindowStartedAt,
+        rewardedCredits: defaultGate.rewardedCredits,
+        rewardedDailyCount: defaultGate.rewardedDailyCount,
+        rewardedWindowStartedAt: defaultGate.rewardedWindowStartedAt,
         createdAt: serverTimestamp(),
       },
       { merge: true }
@@ -82,7 +104,17 @@ export async function getOrCreateUserGate(uid: string): Promise<UserGate> {
 
 export async function setUserGateState(
   uid: string,
-  state: Partial<Pick<UserGate, "onboardingFreeUsed" | "weeklyUsesCount" | "weeklyWindowStartedAt">>
+  state: Partial<
+    Pick<
+      UserGate,
+      | "onboardingFreeUsed"
+      | "weeklyUsesCount"
+      | "weeklyWindowStartedAt"
+      | "rewardedCredits"
+      | "rewardedDailyCount"
+      | "rewardedWindowStartedAt"
+    >
+  >
 ): Promise<void> {
   const db = getFirestore(getApp());
   const userRef = doc(collection(db, "users"), uid);

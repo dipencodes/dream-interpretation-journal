@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -8,6 +8,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { getApp } from "@react-native-firebase/app";
 import { getFunctions, httpsCallable } from "@react-native-firebase/functions";
@@ -15,6 +16,7 @@ import type { RootStackParamList } from "../navigation/types";
 import { t } from "../i18n";
 import { ensureAnonymousAuth } from "../services/auth";
 import {
+  deleteDream,
   upsertDream,
   type DreamRecord,
   type MethodInterpretation,
@@ -24,15 +26,22 @@ import {
   upsertPlaygroundDream,
 } from "../services/playgroundStorage";
 import type { InterpretMethodKey } from "../services/appPreferences";
-import { canRunAiInterpretation, consumeFreeUseIfNeeded } from "../services/paywallGate";
+import { canRunAiInterpretation, consumeGateUse } from "../services/paywallGate";
 import { MoodIcon } from "../components/MoodIcon";
 import { getMoodOptionById, getMoodOptionByTitle } from "../constants/moods";
 import {
   normalizeTrackingErrorCode,
+  trackRewardedAutoResumeFailed,
+  trackRewardedAutoResumeSucceeded,
   trackInterpretationFailed,
   trackInterpretationStarted,
   trackInterpretationSucceeded,
 } from "../services/tracking";
+import { maybePromptReviewAfterInterpretation } from "../services/reviewPrompt";
+import {
+  consumePaywallContinuationRewarded,
+  createPaywallContinuationToken,
+} from "../services/paywallContinuation";
 
 type Props = NativeStackScreenProps<RootStackParamList, "DreamSummary">;
 
@@ -150,6 +159,9 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
   const [expandedInterpretation, setExpandedInterpretation] = useState(false);
   const [currentMethod, setCurrentMethod] = useState<InterpretMethodKey | null>(null);
   const [isInterpretingMethod, setIsInterpretingMethod] = useState<InterpretMethodKey | null>(null);
+  const [pendingContinuationToken, setPendingContinuationToken] = useState<string | null>(null);
+  const [pendingContinuationMethod, setPendingContinuationMethod] =
+    useState<InterpretMethodKey | null>(null);
   const confirmUseWeeklyFreeInterpretation = () =>
     new Promise<boolean>((resolve) => {
       Alert.alert(t.paywall.weeklyFreeConfirmTitle, t.paywall.weeklyFreeConfirmMessage, [
@@ -289,14 +301,20 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
 
   const onInterpretWithMethod = async (
     method: InterpretMethodKey,
-    options?: { markRegenerated?: boolean }
+    options?: { markRegenerated?: boolean; throwOnError?: boolean }
   ) => {
     if (isInterpretingMethod) return;
     let didStartInterpretation = false;
     try {
       const gate = await canRunAiInterpretation();
       if (!gate.allowed) {
-        navigation.navigate("Paywall");
+        const continuationToken = createPaywallContinuationToken();
+        setPendingContinuationToken(continuationToken);
+        setPendingContinuationMethod(method);
+        navigation.navigate("Paywall", {
+          entry: "gate",
+          continuationToken,
+        });
         return;
       }
 
@@ -321,6 +339,7 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
         dreamText: dream.dreamText,
         dreamDate: dream.dreamDate,
         sourceKey: method,
+        forceRefresh: options?.markRegenerated === true,
       });
       const data = result.data as {
         summary?: string | null;
@@ -353,7 +372,7 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
         method,
         source_screen: "dream_summary",
       });
-      await consumeFreeUseIfNeeded(gate.uid);
+      await consumeGateUse(gate);
       setDream(updatedDream);
       setCurrentMethod(method);
       setExpandedInterpretation(false);
@@ -364,6 +383,7 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
           return next;
         });
       }
+      await maybePromptReviewAfterInterpretation();
     } catch (error: unknown) {
       if (didStartInterpretation) {
         await trackInterpretationFailed({
@@ -380,10 +400,67 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
           ? (error as { message: string }).message
           : "Could not interpret with this method.";
       Alert.alert("Error", errorMessage);
+      if (options?.throwOnError) {
+        throw error;
+      }
     } finally {
       setIsInterpretingMethod(null);
     }
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!route.params.promptReviewAfterSuccess) {
+        return;
+      }
+
+      navigation.setParams({ promptReviewAfterSuccess: false });
+      maybePromptReviewAfterInterpretation().catch(() => {
+        // Keep interpretation flow resilient if review prompt cannot be shown.
+      });
+    }, [navigation, route.params.promptReviewAfterSuccess])
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
+
+      if (!pendingContinuationToken || !pendingContinuationMethod) {
+        return () => {
+          cancelled = true;
+        };
+      }
+
+      (async () => {
+        const shouldAutoResume = await consumePaywallContinuationRewarded(
+          pendingContinuationToken
+        );
+        const methodToResume = pendingContinuationMethod;
+        setPendingContinuationToken(null);
+        setPendingContinuationMethod(null);
+
+        if (!shouldAutoResume || cancelled) {
+          return;
+        }
+
+        try {
+          await onInterpretWithMethod(methodToResume, { throwOnError: true });
+          await trackRewardedAutoResumeSucceeded({
+            source_screen: "dream_summary",
+          });
+        } catch (error) {
+          await trackRewardedAutoResumeFailed({
+            source_screen: "dream_summary",
+            error_code: normalizeTrackingErrorCode(error),
+          });
+        }
+      })();
+
+      return () => {
+        cancelled = true;
+      };
+    }, [pendingContinuationMethod, pendingContinuationToken])
+  );
 
   const copyText = async (value: string) => {
     const trimmed = value.trim();
@@ -400,26 +477,39 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
     }
   };
 
-  const onDeletePlaygroundDream = () => {
-    if (context !== "playground") return;
+  const onDeleteDream = () => {
+    const isPlayground = context === "playground";
 
     Alert.alert(
-      t.playground.deleteConfirmTitle,
-      t.playground.deleteConfirmMessage,
+      isPlayground ? t.playground.deleteConfirmTitle : t.journal.deleteConfirmTitle,
+      isPlayground ? t.playground.deleteConfirmMessage : t.journal.deleteConfirmMessage,
       [
         {
-          text: t.playground.deleteCancelAction,
+          text: isPlayground ? t.playground.deleteCancelAction : t.journal.deleteCancelAction,
           style: "cancel",
         },
         {
-          text: t.playground.deleteConfirmAction,
+          text: isPlayground ? t.playground.deleteConfirmAction : t.journal.deleteConfirmAction,
           style: "destructive",
           onPress: async () => {
             try {
-              await deletePlaygroundDream(dream.id);
-              navigation.replace("Playground");
+              if (isPlayground) {
+                await deletePlaygroundDream(dream.id);
+                navigation.replace("Playground");
+                return;
+              }
+
+              await deleteDream(dream.id);
+              if (navigation.canGoBack()) {
+                navigation.goBack();
+                return;
+              }
+              navigation.reset({
+                index: 0,
+                routes: [{ name: "Home" }],
+              });
             } catch {
-              Alert.alert("Error", t.playground.deleteError);
+              Alert.alert("Error", isPlayground ? t.playground.deleteError : t.journal.deleteError);
             }
           },
         },
@@ -471,16 +561,14 @@ export function DreamSummaryScreen({ route, navigation }: Props) {
             <Text className="text-text-primary text-2xl">‹</Text>
           </Pressable>
 
-          {context === "playground" ? (
-            <Pressable
-              onPress={onDeletePlaygroundDream}
-              className="rounded-full border border-red-200 bg-red-50 px-4 py-2 active:opacity-90"
-            >
-              <Text className="text-red-600 text-sm font-semibold">
-                {t.playground.deleteCta}
-              </Text>
-            </Pressable>
-          ) : null}
+          <Pressable
+            onPress={onDeleteDream}
+            className="rounded-full border border-red-200 bg-red-50 px-4 py-2 active:opacity-90"
+          >
+            <Text className="text-red-600 text-sm font-semibold">
+              {context === "playground" ? t.playground.deleteCta : t.journal.deleteCta}
+            </Text>
+          </Pressable>
         </View>
 
         <View className="items-center">

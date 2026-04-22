@@ -67,7 +67,7 @@ export async function saveDream(record: DreamRecord) {
   dreams.unshift(record); // newest first
 
   await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(dreams));
-  await setHasCompletedOnboarding(true);
+  await setHasCompletedOnboarding(true, record.createdAt);
   await trackDreamSaved({
     has_interpretation: Boolean(record.interpretation),
     source_key: record.sourceKey || "unknown",
@@ -104,4 +104,10 @@ export async function upsertDream(record: DreamRecord) {
   }
 
   await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(dreams));
+}
+
+export async function deleteDream(id: string): Promise<void> {
+  const dreams = await getDreams();
+  const next = dreams.filter((dream) => dream.id !== id);
+  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
 }

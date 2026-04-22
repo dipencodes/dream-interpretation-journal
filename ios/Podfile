@@ -9,6 +9,7 @@ platform :ios, min_ios_version_supported
 prepare_react_native_project!
 
 use_frameworks! :linkage => :static
+$RNGoogleMobileAdsAsStaticFramework = true
 
 target 'DreamInterpretationJournal' do
   # pod 'react-native-safe-area-context', :path => '../node_modules/react-native-safe-area-context'

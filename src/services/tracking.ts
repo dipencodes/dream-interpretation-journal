@@ -17,6 +17,16 @@ export type TrackingEventName =
   | "paywall_viewed"
   | "paywall_checkout_started"
   | "paywall_closed"
+  | "paywall_rewarded_option_viewed"
+  | "rewarded_ad_load_succeeded"
+  | "rewarded_ad_load_failed"
+  | "rewarded_ad_show_succeeded"
+  | "rewarded_ad_show_failed"
+  | "rewarded_ad_reward_earned"
+  | "rewarded_credit_granted"
+  | "rewarded_ad_cap_reached"
+  | "rewarded_auto_resume_succeeded"
+  | "rewarded_auto_resume_failed"
   | "dream_saved"
   | "interpretation_started"
   | "interpretation_succeeded"
@@ -50,7 +60,11 @@ const metaTrackingProvider: TrackingProvider = {
   },
 
   async logEvent(name: TrackingEventName, params?: TrackingParams): Promise<void> {
-    if (name !== "paywall_viewed" && name !== "paywall_checkout_started") {
+    if (
+      name !== "paywall_viewed" &&
+      name !== "paywall_checkout_started" &&
+      name !== "rewarded_credit_granted"
+    ) {
       return;
     }
 
@@ -157,6 +171,60 @@ export async function trackPaywallClosed(params: {
   result: "cancelled" | "not_presented" | "restored" | "unknown";
 }): Promise<void> {
   await safeLogEvent("paywall_closed", params);
+}
+
+export async function trackPaywallRewardedOptionViewed(): Promise<void> {
+  await safeLogEvent("paywall_rewarded_option_viewed");
+}
+
+export async function trackRewardedAdLoadSucceeded(): Promise<void> {
+  await safeLogEvent("rewarded_ad_load_succeeded");
+}
+
+export async function trackRewardedAdLoadFailed(params: {
+  error_code: string;
+}): Promise<void> {
+  await safeLogEvent("rewarded_ad_load_failed", params);
+}
+
+export async function trackRewardedAdShowSucceeded(): Promise<void> {
+  await safeLogEvent("rewarded_ad_show_succeeded");
+}
+
+export async function trackRewardedAdShowFailed(params: {
+  error_code: string;
+}): Promise<void> {
+  await safeLogEvent("rewarded_ad_show_failed", params);
+}
+
+export async function trackRewardedAdRewardEarned(): Promise<void> {
+  await safeLogEvent("rewarded_ad_reward_earned");
+}
+
+export async function trackRewardedCreditGranted(params: {
+  entry: "gate" | "reward" | "unknown";
+  remaining_daily_rewarded: number;
+}): Promise<void> {
+  await safeLogEvent("rewarded_credit_granted", params);
+}
+
+export async function trackRewardedAdCapReached(params: {
+  resets_at_unix_ms: number;
+}): Promise<void> {
+  await safeLogEvent("rewarded_ad_cap_reached", params);
+}
+
+export async function trackRewardedAutoResumeSucceeded(params: {
+  source_screen: "dream_mood" | "dream_interpret_method" | "dream_summary";
+}): Promise<void> {
+  await safeLogEvent("rewarded_auto_resume_succeeded", params);
+}
+
+export async function trackRewardedAutoResumeFailed(params: {
+  source_screen: "dream_mood" | "dream_interpret_method" | "dream_summary";
+  error_code: string;
+}): Promise<void> {
+  await safeLogEvent("rewarded_auto_resume_failed", params);
 }
 
 export async function trackDreamSaved(params: {

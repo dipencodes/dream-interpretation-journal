@@ -21,6 +21,9 @@
       <meta-data
         android:name="com.facebook.sdk.AutoLogAppEventsEnabled"
         android:value="false" />
+      <meta-data
+        android:name="com.google.android.gms.ads.APPLICATION_ID"
+        android:value="ca-app-pub-3070466523357671~2297930275" />
 
       <activity
         android:name=".MainActivity"

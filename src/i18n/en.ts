@@ -101,6 +101,12 @@ export const en = {
     calendarYearLabel: "Year",
     calendarApplyCta: "Apply",
     calendarCancelCta: "Cancel",
+    deleteCta: "Delete",
+    deleteConfirmTitle: "Delete dream?",
+    deleteConfirmMessage: "This dream will be removed permanently.",
+    deleteConfirmAction: "Delete",
+    deleteCancelAction: "Cancel",
+    deleteError: "Could not delete this dream. Please try again.",
   },
 
   playground: {
@@ -133,6 +139,11 @@ export const en = {
     interpretationMenuSubtitle: "Set your default AI interpretation method.",
     notificationsTitle: "Notifications",
     notificationsMenuSubtitle: "Enable reminders and choose morning time.",
+    creditsTitle: "Free Credits",
+    creditsSubtitle: "Total free credits available.",
+    creditsDailyRemainingLabel: "Ad credits left today:",
+    creditsUnlimited: "Unlimited",
+    addFreeCreditCta: "Add Free Credit",
     premiumTitle: "Get Premium",
     premiumSubtitle: "Unlock unlimited AI interpretations.",
     subscriptionTitle: "Subscription",
@@ -168,15 +179,18 @@ export const en = {
     title: "Unlock unlimited AI interpretations",
     subtitle:
       "You have used this week's free interpretation. Subscribe for unlimited access, or come back next week for your next free one.",
+    rewardEntryTitle: "Earn free credits",
+    rewardEntrySubtitle:
+      "Watch an ad to add 1 free interpretation credit. You can earn up to 3 ad credits per day.",
     weeklyFreeBannerTitle: "You still get 1 free interpretation every week",
     weeklyFreeBannerSubtitle:
       "New here? You get 2 free to start, then 1 free every week.",
     weeklyFreeUsedTitle: "Weekly free interpretation used",
     weeklyFreeUsedMessage:
-      "You used your free interpretation for this week. Your next free interpretation unlocks next week.",
+      "You used your free interpretation for this week. Your next free interpretation unlocks next week or unlock using our ad reward.",
     weeklyFreeConfirmTitle: "Use this week's free interpretation?",
     weeklyFreeConfirmMessage:
-      "This will use your 1 free interpretation for this week. Continue?",
+      "This will use your free interpretation credit for this week. Continue?",
     weeklyFreeConfirmYesCta: "Use it",
     weeklyFreeConfirmNoCta: "Not now",
     planWeekly: "Weekly",
@@ -185,7 +199,20 @@ export const en = {
     subscribeCta: "Continue",
     restoreCta: "Restore purchases",
     explorePremiumCta: "Explore Premium",
+    totalFreeCreditsLabel: "Total free credits available:",
+    watchRewardCta: "Watch ad for 1 free interpretation",
+    watchRewardLoadingCta: "Loading reward ad...",
+    rewardedRemainingLabel: "Rewarded unlocks left today:",
+    dailyRewardedRemainingLabel: "Ad credits left today:",
+    rewardedCapReachedMessage: "You have reached today's rewarded unlock limit.",
+    rewardedResetsAtLabel: "Resets at",
+    rewardedResetsTodayAtLabel: "Resets today at",
+    rewardedResetsTomorrowAtLabel: "Resets tomorrow at",
+    rewardedNotEarnedMessage: "Reward not earned. Please finish the ad to unlock 1 interpretation.",
+    rewardedLoadError: "Could not load a rewarded ad right now. Please try again.",
+    rewardedGrantError: "Could not grant your rewarded interpretation. Please try again.",
     keepUsingFreeCta: "Keep using free Version",
+    backCta: "Back",
     retryCta: "Retry",
     notNowCta: "Not now",
     restoringLabel: "Restoring...",
@@ -200,6 +227,21 @@ export const en = {
       "Purchase completed but premium was not activated yet. Please try restoring purchases.",
     restoreError: "Could not restore purchases. Please try again.",
     restoreNoActiveSubMessage: "No active subscription was found to restore.",
+  },
+
+  reviewPrompt: {
+    resonanceTitle: "Quick feedback",
+    resonanceMessage: "Does this dream meaning resonate and make sense?",
+    yesCta: "Yes",
+    noCta: "No",
+    reviewTitle: "Help us grow",
+    reviewMessage:
+      "Positive reviews help us grow and help us reach more curious dreams.",
+    leaveReviewCta: "Leave a review",
+    notNowCta: "Not now",
+    feedbackTitle: "We’d love your feedback",
+    feedbackMessage:
+      "Thank you for sharing. Please send your feedback to splitpatron@gmail.com",
   },
 
   common: {},

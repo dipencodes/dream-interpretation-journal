@@ -30,6 +30,8 @@
 	<string>$(META_FACEBOOK_CLIENT_TOKEN)</string>
 	<key>FacebookDisplayName</key>
 	<string>Dream Interpretation Journal</string>
+	<key>GADApplicationIdentifier</key>
+	<string>ca-app-pub-3070466523357671~9469631256</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>

@@ -15,6 +15,8 @@ import type { RootStackParamList } from "../navigation/types";
 import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from "../config/legal";
 import { BottomTabDock } from "../components/BottomTabDock";
 import { t } from "../i18n";
+import { ensureAnonymousAuth } from "../services/auth";
+import { getFreeCreditStatus, type FreeCreditStatus } from "../services/paywallGate";
 import {
   getSubscriptionStatus,
   openSubscriptionManagement,
@@ -80,7 +82,9 @@ export function SettingsScreen({ navigation }: Props) {
   const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus>(
     EMPTY_SUBSCRIPTION_STATUS
   );
+  const [freeCreditStatus, setFreeCreditStatus] = useState<FreeCreditStatus | null>(null);
   const [isLoadingSubscription, setIsLoadingSubscription] = useState(true);
+  const [isLoadingCredits, setIsLoadingCredits] = useState(true);
   const [didSubscriptionLoadFail, setDidSubscriptionLoadFail] = useState(false);
   const [isManagingSubscription, setIsManagingSubscription] = useState(false);
 
@@ -98,14 +102,32 @@ export function SettingsScreen({ navigation }: Props) {
     }
   }, []);
 
+  const loadFreeCreditStatus = useCallback(async () => {
+    try {
+      setIsLoadingCredits(true);
+      const { uid } = await ensureAnonymousAuth();
+      const status = await getFreeCreditStatus(uid);
+      setFreeCreditStatus(status);
+    } catch {
+      setFreeCreditStatus(null);
+    } finally {
+      setIsLoadingCredits(false);
+    }
+  }, []);
+
   useFocusEffect(
     useCallback(() => {
       loadSubscriptionStatus();
-    }, [loadSubscriptionStatus])
+      loadFreeCreditStatus();
+    }, [loadFreeCreditStatus, loadSubscriptionStatus])
   );
 
   const onOpenPaywall = () => {
     navigation.navigate("Paywall", { entry: "direct" });
+  };
+
+  const onOpenRewardPaywall = () => {
+    navigation.navigate("Paywall", { entry: "reward" });
   };
 
   const openExternalUrl = useCallback(async (url: string) => {
@@ -151,6 +173,12 @@ export function SettingsScreen({ navigation }: Props) {
     Platform.OS === "ios"
       ? t.settings.manageStoreIos
       : t.settings.manageStoreAndroid;
+  const isPremiumForCreditUi =
+    subscriptionStatus.isPremiumActive || freeCreditStatus?.isPremium === true;
+  const creditCountText = isPremiumForCreditUi
+    ? t.settings.creditsUnlimited
+    : String(freeCreditStatus?.totalFreeCreditsAvailable ?? 0);
+  const dailyRewardedRemaining = freeCreditStatus?.remainingDailyRewarded ?? 0;
 
   return (
     <View className="flex-1 bg-bg-base">
@@ -187,6 +215,50 @@ export function SettingsScreen({ navigation }: Props) {
             subtitle={t.settings.termsSubtitle}
             onPress={() => openExternalUrl(TERMS_OF_USE_URL)}
           />
+
+          <View
+            className="mt-3 rounded-2xl border border-border-subtle bg-bg-surface px-4 py-4"
+            style={{
+              shadowColor: "#000",
+              shadowOpacity: 0.05,
+              shadowRadius: 14,
+              shadowOffset: { width: 0, height: 8 },
+              elevation: 2,
+            }}
+          >
+            <Text className="text-text-primary text-base font-semibold">
+              {t.settings.creditsTitle}
+            </Text>
+            <Text className="text-text-secondary mt-1 text-sm leading-5">
+              {t.settings.creditsSubtitle}
+            </Text>
+
+            {isLoadingCredits ? (
+              <View className="mt-3 self-start">
+                <ActivityIndicator />
+              </View>
+            ) : (
+              <>
+                <Text className="text-brand-copper mt-3 text-2xl font-semibold">
+                  {creditCountText}
+                </Text>
+                <Text className="text-text-secondary mt-1 text-xs leading-5">
+                  {t.settings.creditsDailyRemainingLabel} {dailyRewardedRemaining}
+                </Text>
+              </>
+            )}
+
+            {!isPremiumForCreditUi ? (
+              <Pressable
+                onPress={onOpenRewardPaywall}
+                className="mt-3 self-start rounded-full border border-brand-primary bg-bg-surface px-4 py-2 active:opacity-90"
+              >
+                <Text className="text-brand-copper text-sm font-semibold">
+                  {t.settings.addFreeCreditCta}
+                </Text>
+              </Pressable>
+            ) : null}
+          </View>
 
           {!subscriptionStatus.isPremiumActive ? (
             <SettingsItem
