@@ -8,6 +8,9 @@
         ".git",
         "firebase-debug.log",
         "firebase-debug.*.log"
+      ],
+      "postdeploy": [
+        "gcloud firestore fields ttls update expiresAt --collection-group=rateLimits --enable-ttl --project=$GCLOUD_PROJECT --quiet"
       ]
     }
   ]

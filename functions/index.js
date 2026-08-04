@@ -41,6 +41,12 @@ const METRICS_DOC_ID = "openai_interpretation";
 const CACHE_TTL_DAYS = 30;
 const CACHE_TTL_MS = CACHE_TTL_DAYS * 24 * 60 * 60 * 1000;
 const FILE_SEARCH_MAX_NUM_RESULTS = 3;
+const MAX_DREAM_TEXT_LENGTH = 3000;
+const MAX_OUTPUT_TOKENS = 1000;
+const RATE_LIMIT_COLLECTION = "rateLimits";
+const DAILY_RATE_LIMIT = 20;
+const RATE_LIMIT_TTL_DAYS = 7;
+const RATE_LIMIT_TTL_MS = RATE_LIMIT_TTL_DAYS * 24 * 60 * 60 * 1000;
 
 // Estimated model pricing in USD per 1M tokens.
 const MODEL_INPUT_COST_PER_1M_USD = 0.4;
@@ -205,6 +211,33 @@ async function setCachedInterpretation(cacheKey, payload, sourceKey) {
   });
 }
 
+function getUtcDateString(date = new Date()) {
+  return date.toISOString().slice(0, 10);
+}
+
+// Transactionally increments today's per-uid request count and returns the
+// count *after* incrementing. Callers compare this against DAILY_RATE_LIMIT.
+async function incrementDailyRateLimit(uid) {
+  const dateString = getUtcDateString();
+  const docRef = db.collection(RATE_LIMIT_COLLECTION).doc(`${uid}_${dateString}`);
+
+  return db.runTransaction(async (transaction) => {
+    const doc = await transaction.get(docRef);
+    const currentCount = doc.exists ? Number(doc.data().count || 0) : 0;
+    const nextCount = currentCount + 1;
+
+    transaction.set(docRef, {
+      uid,
+      date: dateString,
+      count: nextCount,
+      expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + RATE_LIMIT_TTL_MS),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, {merge: true});
+
+    return nextCount;
+  });
+}
+
 async function recordUsageMetrics({
   cacheHit,
   cacheBypassed,
@@ -255,6 +288,18 @@ exports.interpretDream = functions
     );
   }
 
+  if (dreamText.length > MAX_DREAM_TEXT_LENGTH) {
+    console.warn("interpretDream rejected: dreamText too long", {
+      uid: context.auth.uid,
+      dreamTextLength: dreamText.length,
+      maxDreamTextLength: MAX_DREAM_TEXT_LENGTH,
+    });
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      `dreamText must be ${MAX_DREAM_TEXT_LENGTH} characters or fewer.`
+    );
+  }
+
   if (forceRefresh !== undefined && typeof forceRefresh !== "boolean") {
     throw new functions.https.HttpsError(
         "invalid-argument",
@@ -280,6 +325,20 @@ exports.interpretDream = functions
     throw new functions.https.HttpsError(
       "failed-precondition",
       `Source '${selectedSource}' is not available yet.`
+    );
+  }
+
+  const rateLimitCount = await incrementDailyRateLimit(context.auth.uid);
+  if (rateLimitCount > DAILY_RATE_LIMIT) {
+    console.warn("interpretDream rejected: daily rate limit exceeded", {
+      uid: context.auth.uid,
+      date: getUtcDateString(),
+      count: rateLimitCount,
+      dailyRateLimit: DAILY_RATE_LIMIT,
+    });
+    throw new functions.https.HttpsError(
+      "resource-exhausted",
+      "Daily interpretation limit reached. Please try again tomorrow."
     );
   }
 
@@ -324,6 +383,7 @@ exports.interpretDream = functions
     openaiRequested = true;
     const response = await getOpenAIClient().responses.create({
       model: MODEL_NAME,
+      max_output_tokens: MAX_OUTPUT_TOKENS,
       input: [
         {
           role: "system",
